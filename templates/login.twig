@@ -1,0 +1,101 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+
+<form method="post" enctype="multipart/form-data" onsubmit="return false;" class="block_login">
+
+<input type='hidden' name='_wpnonce' value='{{ function("wp_create_nonce", "wp_rest") }}' />
+
+<div class='block_login__row'>
+<label>Login</label>
+<input name='login' />
+</div>
+
+<div class='block_login__row'>
+<label>Password</label>
+<input name='password' type='password' />
+</div>
+
+<div class='block_login__button'>
+<button>Login</button>
+</div>
+
+<div class='block_login__result'></div>
+
+</form>
+
+<script>
+onJQueryLoaded(function(){
+	
+	$('.block_login__button button').click(function(){
+		
+		var $form = $('form.block_login');
+		var contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
+		var processData = true;	
+		var send_data = {};
+		var arr = $form.find('input');
+		for (var i=0; i<arr.length; i++)
+		{
+			var $item = $(arr[i]);
+			var name = $item.attr('name');
+			send_data[name] = $item.val();
+		}
+		
+		var callback = function(data)
+		{
+			$('.block_login__result').html(data.message);
+			console.log(data);
+		};
+		
+		$('.block_login__result').html('Ожидайте, идет отправка запроса');
+		
+		$.ajax({
+			url: "/wp-json/elberos_user_cabinet/login/",
+			data: send_data,
+			dataType: 'json',
+			method: 'post',
+			
+			cache: false,
+			contentType: contentType,
+			processData: processData,
+			xhrFields: { withCredentials: true },
+			
+			beforeSend: (function(send_data){ return function(xhr)
+			{
+				// this picks up value set in functions.php to allow authentication
+				// to be passed through with function so WP knows to allow deletion.
+				xhr.setRequestHeader('X-WP-Nonce', send_data['_wpnonce']);
+			}})(send_data),
+			
+			success: (function(callback){
+				return function(data, textStatus, jqXHR)
+				{
+					if (data.success)
+					{
+						callback(data);
+					}
+					else
+					{
+						callback(data);
+					}
+				}
+			})(callback),
+			
+			error: (function(callback){
+				return function(data, textStatus, jqXHR){
+					
+					callback({
+						message: "System error",
+						code: -100,
+					});
+					
+				}
+			})(callback),
+		});
+		
+	});
+	
+});
+</script>
+
+{% endblock %}

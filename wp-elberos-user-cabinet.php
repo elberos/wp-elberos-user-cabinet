@@ -23,7 +23,7 @@
 
 if ( !class_exists( 'Elberos_User_Cabinet_Plugin' ) ) 
 {
-	
+
 class Elberos_User_Cabinet_Plugin
 {
 	
@@ -41,6 +41,8 @@ class Elberos_User_Cabinet_Plugin
 			}
 		);
 		add_action('admin_menu', 'Elberos_User_Cabinet_Plugin::register_admin_menu');
+		add_action('elberos_register_routes', 'Elberos_User_Cabinet_Plugin::elberos_register_routes');
+		add_filter('timber/loader/loader', 'Elberos_User_Cabinet_Plugin::twig_loader');
 	}
 	
 	
@@ -63,9 +65,57 @@ class Elberos_User_Cabinet_Plugin
 		);
 	}
 	
+	
+	
+	/**
+	 * Register routes
+	 */
+	public static function elberos_register_routes($site)
+	{
+		$site->add_route
+		(
+			"site:login", "/login",
+			"@user-cabinet/login.twig",
+			[
+				'title' => 'Авторизация',
+				'description' => 'Авторизация',
+				'context' => function($site, $context)
+				{
+					return $context;
+				}
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:logout", "/logout",
+			"@user-cabinet/logout.twig",
+			[
+				'title' => 'Выход',
+				'description' => 'Выход',
+				'context' => function($site, $context)
+				{
+					return $context;
+				}
+			]
+		);
+	}
+	
+	
+	
+	/**
+	 * Twig
+	 */
+	public static function twig_loader($loader)
+	{
+		$loader->addPath(__DIR__ . "/templates", "user-cabinet");
+		return $loader;
+	}
 }
 
+include __DIR__ . "/include/api.php";
 
 Elberos_User_Cabinet_Plugin::init();
+\Elberos\UserCabinet\Api::init();
 
 }
