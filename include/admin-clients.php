@@ -311,7 +311,7 @@ class Clients_Table extends \WP_List_Table
 		
 		<div class="wrap">
 			<div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-			<h1><?php _e($item['id'] > 0 ? 'Forms Edit' : 'Forms Add', 'elberos-user-cabinet')?></h1>
+			<h1><?php _e($item['id'] > 0 ? 'Редактировать клиента' : 'Добавить клиента', 'elberos-user-cabinet')?></h1>
 			
 			<?php if (!empty($notice)): ?>
 				<div id="notice" class="error"><p><?php echo $notice ?></p></div>

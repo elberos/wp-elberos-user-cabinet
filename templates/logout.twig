@@ -2,6 +2,40 @@
 
 {% block content %}
 
-Выход
+<form method="post" enctype="multipart/form-data" onsubmit="return false;" class="block_login">
+
+<input type='hidden' name='_wpnonce' value='{{ function("wp_create_nonce", "wp_rest") }}' />
+
+<div class='block_login__button'>
+<button>Logout</button>
+</div>
+
+<div class='block_login__result'></div>
+
+</form>
+
+
+<script>
+onJQueryLoaded(function(){
+	
+	$('.block_login__button button').click(function(){
+		
+		var $form = $('form.block_login');
+		
+		$('.block_login__result').html('Ожидайте, идет отправка запроса');
+		api_send_form
+		(
+			$form,
+			'elberos_user_cabinet', 'logout',
+			function(data)
+			{
+				$('.block_login__result').html(data.message);
+			}
+		);
+		
+	});
+	
+});
+</script>
 
 {% endblock %}

@@ -1,0 +1,84 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+
+
+{% if site.current_user is not null %}
+
+<h1>Профиль</h1>
+
+<form method="post" enctype="multipart/form-data" onsubmit="return false;" class="block_user_profile">
+
+<input type='hidden' name='_wpnonce' value='{{ function("wp_create_nonce", "wp_rest") }}' />
+
+<h2>User data</h2>
+
+<div class='block_user_profile__row'>
+<label>Name</label>
+<input name='name' value='{{ site.current_user.name }}' />
+</div>
+
+<div class='block_user_profile__row'>
+<label>Email</label>
+<input name='email' value='{{ site.current_user.email }}' />
+</div>
+
+<div class='block_user_profile__row'>
+<label>Phone</label>
+<input name='phone' value='{{ site.current_user.phone }}' />
+</div>
+
+<h2>Change password</h2>
+
+<div class='block_user_profile__row'>
+<label>Password</label>
+<input name='password1' type='password' />
+</div>
+
+<div class='block_user_profile__row'>
+<label>Repeat password</label>
+<input name='password2' type='password' />
+</div>
+
+<div class='block_user_profile__button'>
+<button>Update</button>
+</div>
+
+<div class='block_user_profile__result'></div>
+
+</form>
+
+
+<script>
+onJQueryLoaded(function(){
+	
+	$('.block_user_profile__button button').click(function(){
+		
+		var $form = $('form.block_user_profile');
+		
+		$('.block_user_profile__result').html('Ожидайте, идет отправка запроса');
+		api_send_form
+		(
+			$form,
+			'elberos_user_cabinet', 'profile',
+			function(data)
+			{
+				$('.block_user_profile__result').html(data.message);
+			}
+		);
+		
+	});
+	
+});
+</script>
+
+
+{% else %}
+
+Не авторизован<br/>
+<a href='{{ site.locale_prefix }}/login'>Авторизация</a>
+
+{% endif %}
+
+
+{% endblock %}

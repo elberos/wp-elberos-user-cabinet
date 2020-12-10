@@ -41,6 +41,7 @@ class Elberos_User_Cabinet_Plugin
 			}
 		);
 		add_action('admin_menu', 'Elberos_User_Cabinet_Plugin::register_admin_menu');
+		add_action('elberos_setup_after', 'Elberos_User_Cabinet_Plugin::elberos_setup_after');
 		add_action('elberos_register_routes', 'Elberos_User_Cabinet_Plugin::elberos_register_routes');
 		add_filter('timber/loader/loader', 'Elberos_User_Cabinet_Plugin::twig_loader');
 	}
@@ -61,7 +62,7 @@ class Elberos_User_Cabinet_Plugin
 				\Elberos\UserCabinet\Clients::show();
 			},
 			null,
-			8
+			35
 		);
 	}
 	
@@ -74,7 +75,7 @@ class Elberos_User_Cabinet_Plugin
 	{
 		$site->add_route
 		(
-			"site:login", "/login",
+			"site:user:login", "/login",
 			"@user-cabinet/login.twig",
 			[
 				'title' => 'Авторизация',
@@ -88,7 +89,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:logout", "/logout",
+			"site:user:logout", "/logout",
 			"@user-cabinet/logout.twig",
 			[
 				'title' => 'Выход',
@@ -99,6 +100,49 @@ class Elberos_User_Cabinet_Plugin
 				}
 			]
 		);
+		
+		$site->add_route
+		(
+			"site:user:register", "/register",
+			"@user-cabinet/register.twig",
+			[
+				'title' => 'Регистрация',
+				'description' => 'Регистрация',
+				'context' => function($site, $context)
+				{
+					return $context;
+				}
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:user:profile", "/profile",
+			"@user-cabinet/profile.twig",
+			[
+				'title' => 'Профиль',
+				'description' => 'Профиль',
+				'context' => function($site, $context)
+				{
+					return $context;
+				}
+			]
+		);
+	}
+	
+	
+	
+	/**
+	 * Setup after
+	 */
+	public static function elberos_setup_after($site)
+	{
+		global $wpdb;
+		
+		list($jwt, $current_user) = \Elberos\UserCabinet\Api::get_current_user();
+		$site->jwt = $jwt;
+		$site->current_user = $current_user;
+		
 	}
 	
 	
