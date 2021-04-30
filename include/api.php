@@ -27,67 +27,52 @@ if ( !class_exists( Api::class ) )
 class Api
 {
 	
+	/**
+	 * Init api
+	 */
 	public static function init()
 	{
-		add_action('rest_api_init', '\\Elberos\\UserCabinet\\Api::register_api');
+		add_action('elberos_register_routes', '\\Elberos\\UserCabinet\\Api::register_routes');
 	}
+	
 	
 	
 	/**
 	 * Register API
 	 */
-	public static function register_api()
+	public static function register_routes($site)
 	{
-		register_rest_route
-		(
-			'elberos_user_cabinet',
-			'login',
-			array(
-				'methods' => 'POST',
-				'callback' => function ($arr){ return static::login($arr); },
-			)
-		);
-		register_rest_route
-		(
-			'elberos_user_cabinet',
-			'logout',
-			array(
-				'methods' => 'POST',
-				'callback' => function ($arr){ return static::logout($arr); },
-			)
-		);
-		register_rest_route
-		(
-			'elberos_user_cabinet',
-			'profile',
-			array(
-				'methods' => 'POST',
-				'callback' => function ($arr){ return static::profile($arr); },
-			)
-		);
+		$site->add_api("elberos_cabinet", "login", "\\Elberos\\UserCabinet\\Api::login");
+		$site->add_api("elberos_cabinet", "logout", "\\Elberos\\UserCabinet\\Api::logout");
+		$site->add_api("elberos_cabinet", "register", "\\Elberos\\UserCabinet\\Api::register");
+		$site->add_api("elberos_cabinet", "recovery_password1", "\\Elberos\\UserCabinet\\Api::recovery_password1");
+		$site->add_api("elberos_cabinet", "recovery_password2", "\\Elberos\\UserCabinet\\Api::recovery_password2");
 	}
+	
+	
+	
+	/**
+	 * Register form
+	 */
+	public static function register($site)
+	{
+		return
+		[
+			"success" => false,
+			"message" => "Unknown error",
+			"fields" => [],
+			"code" => -1,
+		];
+	}
+	
 	
 	
 	/**
 	 * Login form
 	 */
-	public static function login($params)
+	public static function login($site)
 	{
 		global $wpdb;
-		
-		/* Check wp nonce */
-		$forms_wp_nonce = isset($_POST["_wpnonce"]) ? $_POST["_wpnonce"] : "";
-		$wp_nonce_res = (int)wp_verify_nonce($forms_wp_nonce, 'wp_rest');
-		if ($wp_nonce_res == 0)
-		{
-			return 
-			[
-				"success" => false,
-				"message" => __("Ошибка формы. Перезагрузите страницу.", "elberos-core"),
-				"fields" => [],
-				"code" => -1,
-			];
-		}
 		
 		if (!defined('SECURE_AUTH_KEY'))
 		{
@@ -100,7 +85,7 @@ class Api
 			];
 		}
 		
-		$login = isset($_POST["login"]) ? $_POST["login"] : "";
+		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
 		$password = isset($_POST["password"]) ? $_POST["password"] : "";
 		
 		/* Check password */
@@ -163,7 +148,7 @@ class Api
 	/**
 	 * Logout form
 	 */
-	public static function logout($params)
+	public static function logout($site)
 	{
 		/* Check wp nonce */
 		$forms_wp_nonce = isset($_POST["_wpnonce"]) ? $_POST["_wpnonce"] : "";
@@ -199,6 +184,133 @@ class Api
 			"success" => true,
 			"message" => "Ok",
 			"fields" => [],
+			"code" => 1,
+		];
+	}
+	
+	
+	
+	/**
+	 * Recover password1
+	 */
+	public static function recovery_password1($site)
+	{
+		global $wpdb;
+		
+		/* Get login */
+		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		
+		/* Find user */
+		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$sql = $wpdb->prepare
+		(
+			"SELECT * FROM $table_clients WHERE email = %s", $login
+		);
+		$client = $wpdb->get_row($sql, ARRAY_A);
+		if (!$client)
+		{
+			return
+			[
+				"message" => "Неверный email",
+				"code" => -1,
+			];
+		}
+		
+		/* Recovery code */
+		$recovery_code = wp_generate_password(12, false, false);
+		$wpdb->update
+		(
+			$table_clients,
+			[
+				"recovery_password_code" => $recovery_code,
+				"recovery_password_expire" => \Elberos\dbtime( time() + 4*60*60 ),
+			],
+			[
+				"id" => $client['id'],
+			]
+		);
+		
+		return
+		[
+			"message" => "Код был выслан на указанную почту",
+			"code" => 1,
+		];
+	}
+	
+	
+	
+	/**
+	 * Recover password2
+	 */
+	public static function recovery_password2($site)
+	{
+		global $wpdb;
+		
+		/* Get login */
+		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		$code = isset($_POST["code"]) ? $_POST["code"] : "";
+		$password1 = isset($_POST["password1"]) ? $_POST["password1"] : "";
+		$password2 = isset($_POST["password2"]) ? $_POST["password2"] : "";
+		if ($password1 == "")
+		{
+			return
+			[
+				"message" => "Пустой пароль",
+				"code" => -1,
+			];
+		}
+		if ($password1 != $password2)
+		{
+			return
+			[
+				"message" => "Пароли не совпадают",
+				"code" => -1,
+			];
+		}
+		
+		/* Find user */
+		$current_date = \Elberos\dbtime( time() );
+		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$sql = $wpdb->prepare
+		(
+			"SELECT * FROM $table_clients WHERE email = %s and recovery_password_code = %s and recovery_password_expire > %s and recovery_password_expire is not null",
+			$login, $code, $current_date
+		);
+		$client = $wpdb->get_row($sql, ARRAY_A);
+		if (!$client)
+		{
+			return
+			[
+				"message" => "Код восстановления неверный или истек",
+				"code" => -1,
+			];
+		}
+		if ($client['recovery_password_code'] == "" or $client['recovery_password_code'] != $code)
+		{
+			return
+			[
+				"message" => "Код восстановления неверный или истек",
+				"code" => -1,
+			];
+		}
+		
+		/* Update password */
+		$wpdb->update
+		(
+			$table_clients,
+			[
+				"password" => password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]),
+				"recovery_password_code" => "",
+				"recovery_password_expire" => null,
+			],
+			[
+				"id" => $client['id'],
+			]
+		);
+		
+		return
+		[
+			"message" => "Пароль был успешно изменен",
 			"code" => 1,
 		];
 	}
@@ -384,7 +496,7 @@ class Api
 		$jwt = isset($_COOKIE['auth_token']) ? $_COOKIE['auth_token'] : null;
 		if ($jwt)
 		{
-			$jwt = \Elberos\UserCabinet\Api::decode_jwt($jwt);
+			$jwt = static::decode_jwt($jwt);
 			$jwt = $jwt;
 			$user_id = $jwt['u'];
 			

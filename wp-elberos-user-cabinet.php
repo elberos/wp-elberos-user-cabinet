@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Elberos User Cabinet
+ * Plugin Name: WordPress User Cabinet
  * Description: User Cabinet plugin for WordPress
  * Version:     0.1.0
  * Author:      Elberos team <support@elberos.org>
@@ -43,7 +43,25 @@ class Elberos_User_Cabinet_Plugin
 		add_action('admin_menu', 'Elberos_User_Cabinet_Plugin::register_admin_menu');
 		add_action('elberos_setup_after', 'Elberos_User_Cabinet_Plugin::elberos_setup_after');
 		add_action('elberos_register_routes', 'Elberos_User_Cabinet_Plugin::elberos_register_routes');
-		add_filter('timber/loader/loader', 'Elberos_User_Cabinet_Plugin::twig_loader');
+		add_filter('elberos_twig', 'Elberos_User_Cabinet_Plugin::elberos_twig');
+		
+		/* Remove plugin updates */
+		add_filter( 'site_transient_update_plugins', 'Elberos_Commerce_Plugin::filter_plugin_updates' );
+	}
+	
+	
+	
+	/**
+	 * Remove plugin updates
+	 */
+	public static function filter_plugin_updates($value)
+	{
+		$name = plugin_basename(__FILE__);
+		if (isset($value->response[$name]))
+		{
+			unset($value->response[$name]);
+		}
+		return $value;
 	}
 	
 	
@@ -75,57 +93,61 @@ class Elberos_User_Cabinet_Plugin
 	{
 		$site->add_route
 		(
-			"site:user:login", "/login",
+			"site:cabinet:login", "/cabinet/login",
 			"@user-cabinet/login.twig",
 			[
 				'title' => 'Авторизация',
 				'description' => 'Авторизация',
-				'context' => function($site, $context)
-				{
-					return $context;
-				}
 			]
 		);
 		
 		$site->add_route
 		(
-			"site:user:logout", "/logout",
+			"site:cabinet:logout", "/cabinet/logout",
 			"@user-cabinet/logout.twig",
 			[
 				'title' => 'Выход',
 				'description' => 'Выход',
-				'context' => function($site, $context)
-				{
-					return $context;
-				}
 			]
 		);
 		
 		$site->add_route
 		(
-			"site:user:register", "/register",
+			"site:cabinet:recovery_password1", "/cabinet/recovery_password1",
+			"@user-cabinet/recovery_password1.twig",
+			[
+				'title' => 'Восстановить пароль',
+				'description' => 'Восстановить пароль',
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:cabinet:recovery_password2", "/cabinet/recovery_password2",
+			"@user-cabinet/recovery_password2.twig",
+			[
+				'title' => 'Восстановить пароль',
+				'description' => 'Восстановить пароль',
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:cabinet:register", "/cabinet/register",
 			"@user-cabinet/register.twig",
 			[
 				'title' => 'Регистрация',
 				'description' => 'Регистрация',
-				'context' => function($site, $context)
-				{
-					return $context;
-				}
 			]
 		);
 		
 		$site->add_route
 		(
-			"site:user:profile", "/profile",
+			"site:cabinet:profile", "/cabinet",
 			"@user-cabinet/profile.twig",
 			[
 				'title' => 'Профиль',
 				'description' => 'Профиль',
-				'context' => function($site, $context)
-				{
-					return $context;
-				}
 			]
 		);
 	}
@@ -150,10 +172,9 @@ class Elberos_User_Cabinet_Plugin
 	/**
 	 * Twig
 	 */
-	public static function twig_loader($loader)
+	public static function elberos_twig($twig)
 	{
-		$loader->addPath(__DIR__ . "/templates", "user-cabinet");
-		return $loader;
+		$twig->getLoader()->addPath(__DIR__ . "/templates", "user-cabinet");
 	}
 }
 

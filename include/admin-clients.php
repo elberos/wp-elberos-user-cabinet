@@ -262,7 +262,7 @@ class Clients_Table extends \WP_List_Table
 		$item_id = (int) (isset($_REQUEST['id']) ? $_REQUEST['id'] : 0);
 		if ($item_id == 0)
 		{
-			$item['gmtime_add'] = \Elberos\tzdate();
+			$item['gmtime_add'] = \Elberos\dbtime();
 		}
 		
 		return $item;
