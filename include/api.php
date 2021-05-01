@@ -43,10 +43,12 @@ class Api
 	public static function register_routes($site)
 	{
 		$site->add_api("elberos_cabinet", "login", "\\Elberos\\UserCabinet\\Api::login");
-		$site->add_api("elberos_cabinet", "logout", "\\Elberos\\UserCabinet\\Api::logout");
 		$site->add_api("elberos_cabinet", "register", "\\Elberos\\UserCabinet\\Api::register");
 		$site->add_api("elberos_cabinet", "recovery_password1", "\\Elberos\\UserCabinet\\Api::recovery_password1");
 		$site->add_api("elberos_cabinet", "recovery_password2", "\\Elberos\\UserCabinet\\Api::recovery_password2");
+		$site->add_api("elberos_cabinet", "update_profile", "\\Elberos\\UserCabinet\\Api::update_profile");
+		$site->add_api("elberos_cabinet", "change_password", "\\Elberos\\UserCabinet\\Api::change_password");
+		$site->add_api("elberos_cabinet", "change_email", "\\Elberos\\UserCabinet\\Api::change_email");
 	}
 	
 	
@@ -150,32 +152,6 @@ class Api
 	 */
 	public static function logout($site)
 	{
-		/* Check wp nonce */
-		$forms_wp_nonce = isset($_POST["_wpnonce"]) ? $_POST["_wpnonce"] : "";
-		$wp_nonce_res = (int)wp_verify_nonce($forms_wp_nonce, 'wp_rest');
-		if ($wp_nonce_res == 0)
-		{
-			return 
-			[
-				"success" => false,
-				"message" => __("Ошибка формы. Перезагрузите страницу.", "elberos-core"),
-				"fields" => [],
-				"code" => -1,
-			];
-		}
-		
-		/* Check JWT */
-		if (!defined('SECURE_AUTH_KEY'))
-		{
-			return
-			[
-				"success" => false,
-				"message" => "Auth tokens are undefined",
-				"fields" => [],
-				"code" => -1,
-			];
-		}
-		
 		/* Logout */
 		setcookie('auth_token', '', 0, '/');
 		
@@ -320,25 +296,120 @@ class Api
 	/**
 	 * Profile form
 	 */
-	public static function profile($params)
+	public static function update_profile($site)
 	{
 		global $wpdb;
 		
-		/* Check wp nonce */
-		$forms_wp_nonce = isset($_POST["_wpnonce"]) ? $_POST["_wpnonce"] : "";
-		$wp_nonce_res = (int)wp_verify_nonce($forms_wp_nonce, 'wp_rest');
-		if ($wp_nonce_res == 0)
+		list($jwt, $current_user) = static::get_current_user();
+		if ($current_user == null)
 		{
 			return
 			[
-				"success" => false,
-				"message" => __("Ошибка формы. Перезагрузите страницу.", "elberos-core"),
-				"fields" => [],
+				"message" => "Вы не авторизованы",
 				"code" => -1,
 			];
 		}
 		
-		list($jwt, $current_user) = static::get_current_user();
+		$name = isset($_POST['name']) ? $_POST['name'] : "";
+		$phone = isset($_POST['phone']) ? $_POST['phone'] : "";
+		if ($name == "")
+		{
+			return
+			[
+				"message" => "Укажите имя",
+				"code" => -1,
+			];
+		}
+		
+		/* Get user item */
+		$item =
+		[
+			'name' => $name,
+			'phone' => $phone,
+		];
+		
+		/* Update user profile */
+		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$result = $wpdb->update($table_clients, $item, ['id' => $current_user['id']]);
+		
+		return
+		[
+			"message" => "Данные успешно обновлены",
+			"code" => 1,
+		];
+	}
+	
+	
+	
+	/**
+	 * Change password
+	 */
+	public static function change_password($site)
+	{
+		global $wpdb;
+		
+		list($jwt, $current_user, $current_password_hash) = static::get_current_user();
+		if ($current_user == null)
+		{
+			return
+			[
+				"message" => "Вы не авторизованы",
+				"code" => -1,
+			];
+		}
+		
+		$current_password = isset($_POST['current_password']) ? $_POST['current_password'] : "";
+		$new_password1 = isset($_POST['new_password1']) ? $_POST['new_password1'] : "";
+		$new_password2 = isset($_POST['new_password2']) ? $_POST['new_password2'] : "";
+		if (!password_verify($current_password, $current_password_hash))
+		{
+			return
+			[
+				"message" => "Неверный текущий пароль",
+				"code" => -1,
+			];
+		}
+		if ($new_password1 != "" and $new_password1 != $new_password2)
+		{
+			return
+			[
+				"message" => "Пароли не совпадают",
+				"code" => -1,
+			];
+		}
+		
+		$password = password_hash($new_password1, PASSWORD_BCRYPT, ['cost'=>11]);
+		
+		/* Update user profile */
+		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$result = $wpdb->update
+		(
+			$table_clients,
+			[
+				'password' => $password,
+			],
+			[
+				'id' => $current_user['id']
+			]
+		);
+		
+		return
+		[
+			"message" => "Данные успешно обновлены",
+			"code" => 1,
+		];
+	}
+	
+	
+	
+	/**
+	 * Change email
+	 */
+	public static function change_email($site)
+	{
+		global $wpdb;
+		
+		list($jwt, $current_user, $current_password_hash) = static::get_current_user();
 		if ($current_user == null)
 		{
 			return
@@ -350,51 +421,20 @@ class Api
 			];
 		}
 		
-		$name = isset($_POST['name']) ? $_POST['name'] : "";
-		$email = isset($_POST['email']) ? $_POST['email'] : "";
-		$phone = isset($_POST['phone']) ? $_POST['phone'] : "";
-		$password1 = isset($_POST['password1']) ? $_POST['password1'] : "";
-		$password2 = isset($_POST['password2']) ? $_POST['password2'] : "";
-		if ($name == "")
+		$current_password = isset($_POST['current_password']) ? $_POST['current_password'] : "";
+		if (!password_verify($current_password, $current_password_hash))
 		{
 			return
 			[
-				"success" => false,
-				"message" => "Укажите имя",
-				"fields" => [],
-				"code" => -1,
-			];
-		}
-		if ($email == "")
-		{
-			return
-			[
-				"success" => false,
-				"message" => "Укажите email",
-				"fields" => [],
-				"code" => -1,
-			];
-		}
-		if ($password1 != "" and $password1 != $password2)
-		{
-			return
-			[
-				"success" => false,
-				"message" => "Пароли не совпадают",
-				"fields" => [],
+				"message" => "Неверный текущий пароль",
 				"code" => -1,
 			];
 		}
 		
-		/* Validate */
-		$res = apply_filters('elberos_user_cabinet_update_profile_validate', null);
-		if ($res != null)
-		{
-			return $res;
-		}
+		$table_clients = $wpdb->prefix . 'elberos_clients';
 		
 		/* Check if email exists */
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$email = sanitize_user(isset($_POST['email']) ? $_POST['email'] : "");
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s and id != %d", $email, $current_user['id']
@@ -404,36 +444,26 @@ class Api
 		{
 			return
 			[
-				"success" => false,
 				"message" => "Такой email уже зарегистрирован в системе",
-				"fields" => [],
 				"code" => -1,
 			];
 		}
 		
-		/* Get user item */
-		$item =
-		[
-			'name' => $name,
-			'email' => $email,
-			'phone' => $phone,
-		];
-		if ($password1 != '')
-		{
-			$item['password'] = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);
-		}
-		
-		/* Item */
-		$item = apply_filters('elberos_user_cabinet_update_profile_item', $item);
-		
 		/* Update user profile */
-		$result = $wpdb->update($table_clients, $item, ['id' => $current_user['id']]);
+		$result = $wpdb->update
+		(
+			$table_clients,
+			[
+				'email' => $email,
+			],
+			[
+				'id' => $current_user['id']
+			]
+		);
 		
 		return
 		[
-			"success" => true,
 			"message" => "Данные успешно обновлены",
-			"fields" => [],
 			"code" => 1,
 		];
 	}
@@ -492,6 +522,7 @@ class Api
 	{
 		global $wpdb;
 		
+		$password = null;
 		$current_user = null;
 		$jwt = isset($_COOKIE['auth_token']) ? $_COOKIE['auth_token'] : null;
 		if ($jwt)
@@ -508,6 +539,7 @@ class Api
 			$row = $wpdb->get_row($sql, ARRAY_A);
 			if ($row)
 			{
+				$password = $row['password'];
 				unset($row['password']);
 				$current_user = $row;
 			}
@@ -518,7 +550,7 @@ class Api
 			}
 		}
 		
-		return [ $jwt, $current_user ];
+		return [ $jwt, $current_user, $password ];
 	}
 }
 

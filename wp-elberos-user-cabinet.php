@@ -104,10 +104,16 @@ class Elberos_User_Cabinet_Plugin
 		$site->add_route
 		(
 			"site:cabinet:logout", "/cabinet/logout",
-			"@user-cabinet/logout.twig",
+			null,
 			[
-				'title' => 'Выход',
-				'description' => 'Выход',
+				'title' => 'Авторизация',
+				'description' => 'Авторизация',
+				'render' => function($site)
+				{
+					$res = \Elberos\UserCabinet\Api::logout($site);
+					header('Location: ' . site_url("/"));
+					return "";
+				},
 			]
 		);
 		
@@ -143,11 +149,41 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:profile", "/cabinet",
+			"site:cabinet", "/cabinet",
+			"@user-cabinet/cabinet.twig",
+			[
+				'title' => 'Личный кабинет',
+				'description' => 'Личный кабинет',
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:cabinet:profile", "/cabinet/profile",
 			"@user-cabinet/profile.twig",
 			[
 				'title' => 'Профиль',
 				'description' => 'Профиль',
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:cabinet:change_password", "/cabinet/change_password",
+			"@user-cabinet/change_password.twig",
+			[
+				'title' => 'Изменить пароль',
+				'description' => 'пароль',
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:cabinet:change_email", "/cabinet/change_email",
+			"@user-cabinet/change_email.twig",
+			[
+				'title' => 'Изменить E-mail',
+				'description' => 'Изменить E-mail',
 			]
 		);
 	}

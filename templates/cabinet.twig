@@ -1,0 +1,49 @@
+{% extends "layout.twig" %}
+
+{% block page_container %}
+
+
+{% if site.current_user is not null %}
+
+<div class='section section_page cabinet'>
+	<div class='section__wrap'>
+		
+		<div class='section_page_content'>
+			
+			<div class='cabinet_menu'>
+				<ul>
+					<li><a class='nolink' href='/cabinet/profile'>Профиль</a></li>
+					<li><a class='nolink' href='/cabinet/change_password'>Изменить пароль</a></li>
+					<li><a class='nolink' href='/cabinet/change_email'>Изменить email</a></li>
+				</ul>
+				<a class='nolink' href='/cabinet/logout'>
+					<button class='button1 button-logout'>
+						Выход
+					</button>
+				</a>
+			</div>
+			
+			<div class='cabinet_content'>
+				<div class='cabinet_title'>
+					<h1>{{ site.title }}</h1>
+					<div class='line'></div>
+				</div>
+				{% block content %}
+					
+					
+					
+				{% endblock %}
+			</div>
+			
+		</div>
+	</div>
+</div>
+
+{% else %}
+
+{% include "@user-cabinet/login-form.twig" %}
+
+{% endif %}
+
+
+{% endblock %}
