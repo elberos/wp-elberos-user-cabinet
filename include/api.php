@@ -58,12 +58,74 @@ class Api
 	 */
 	public static function register($site)
 	{
+		global $wpdb;
+		
+		/* Get login */
+		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		$name = isset($_POST["name"]) ? $_POST["name"] : "";
+		
+		if ($login == "")
+		{
+			return
+			[
+				"message" => "Укажите email",
+				"code" => -1,
+			];
+		}
+		if ($name == "")
+		{
+			return
+			[
+				"message" => "Укажите имя",
+				"code" => -1,
+			];
+		}
+		
+		$password1 = isset($_POST['password1']) ? $_POST['password1'] : "";
+		$password2 = isset($_POST['password2']) ? $_POST['password2'] : "";
+		if ($password1 != "" and $password1 != $password2)
+		{
+			return
+			[
+				"message" => "Пароли не совпадают",
+				"code" => -1,
+			];
+		}
+		
+		/* Find user */
+		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$sql = $wpdb->prepare
+		(
+			"SELECT * FROM $table_clients WHERE email = %s", $login
+		);
+		$client = $wpdb->get_row($sql, ARRAY_A);
+		if ($client)
+		{
+			return
+			[
+				"message" => "Такой email уже существует",
+				"code" => -1,
+			];
+		}
+		
+		// Register user
+		$password_hash = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);
+		$wpdb->insert
+		(
+			$table_clients,
+			[
+				'name' => $name,
+				'email' => $login,
+				'password' => $password_hash,
+				'gmtime_add' => \Elberos\dbtime(),
+			]
+		);
+		
 		return
 		[
-			"success" => false,
-			"message" => "Unknown error",
+			"message" => "Ok",
 			"fields" => [],
-			"code" => -1,
+			"code" => 1,
 		];
 	}
 	
