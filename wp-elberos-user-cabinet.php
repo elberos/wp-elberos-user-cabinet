@@ -93,7 +93,7 @@ class Elberos_User_Cabinet_Plugin
 	{
 		$site->add_route
 		(
-			"site:cabinet:login", "/cabinet/login",
+			"site:cabinet:login", "/cabinet/login/",
 			"@user-cabinet/login.twig",
 			[
 				'title' => 'Авторизация',
@@ -103,7 +103,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:logout", "/cabinet/logout",
+			"site:cabinet:logout", "/cabinet/logout/",
 			null,
 			[
 				'title' => 'Авторизация',
@@ -119,7 +119,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:recovery_password1", "/cabinet/recovery_password1",
+			"site:cabinet:recovery_password1", "/cabinet/recovery_password1/",
 			"@user-cabinet/recovery_password1.twig",
 			[
 				'title' => 'Восстановить пароль',
@@ -129,7 +129,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:recovery_password2", "/cabinet/recovery_password2",
+			"site:cabinet:recovery_password2", "/cabinet/recovery_password2/",
 			"@user-cabinet/recovery_password2.twig",
 			[
 				'title' => 'Восстановить пароль',
@@ -139,7 +139,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:register", "/cabinet/register",
+			"site:cabinet:register", "/cabinet/register/",
 			"@user-cabinet/register.twig",
 			[
 				'title' => 'Регистрация',
@@ -149,7 +149,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet", "/cabinet",
+			"site:cabinet", "/cabinet/",
 			"@user-cabinet/cabinet.twig",
 			[
 				'title' => 'Личный кабинет',
@@ -159,7 +159,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:profile", "/cabinet/profile",
+			"site:cabinet:profile", "/cabinet/profile/",
 			"@user-cabinet/profile.twig",
 			[
 				'title' => 'Профиль',
@@ -169,7 +169,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:change_password", "/cabinet/change_password",
+			"site:cabinet:change_password", "/cabinet/change_password/",
 			"@user-cabinet/change_password.twig",
 			[
 				'title' => 'Изменить пароль',
@@ -179,7 +179,7 @@ class Elberos_User_Cabinet_Plugin
 		
 		$site->add_route
 		(
-			"site:cabinet:change_email", "/cabinet/change_email",
+			"site:cabinet:change_email", "/cabinet/change_email/",
 			"@user-cabinet/change_email.twig",
 			[
 				'title' => 'Изменить E-mail',
