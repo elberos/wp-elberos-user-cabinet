@@ -5,12 +5,12 @@
 
 {% if site.current_user is not null %}
 
-<div class='section section_page cabinet'>
+<div class='section page_cabinet'>
 	<div class='section__wrap'>
 		
-		<div class='section_page_content'>
+		<div class='page_cabinet_wrap'>
 			
-			<div class='cabinet_menu'>
+			<div class='page_cabinet_menu'>
 				<ul>
 					<li><a class='nolink' href='/cabinet/profile/'>Профиль</a></li>
 					<li><a class='nolink' href='/cabinet/change_password/'>Изменить пароль</a></li>
@@ -23,8 +23,8 @@
 				</a>
 			</div>
 			
-			<div class='cabinet_content'>
-				<div class='cabinet_title'>
+			<div class='page_cabinet_content'>
+				<div class='page_cabinet_title'>
 					<h1>{{ site.title }}</h1>
 					<div class='line'></div>
 				</div>
@@ -36,6 +36,7 @@
 			</div>
 			
 		</div>
+		
 	</div>
 </div>
 
