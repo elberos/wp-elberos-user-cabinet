@@ -42,13 +42,13 @@ class Api
 	 */
 	public static function register_routes($site)
 	{
-		$site->add_api("elberos_cabinet", "login", "\\Elberos\\UserCabinet\\Api::login");
-		$site->add_api("elberos_cabinet", "register", "\\Elberos\\UserCabinet\\Api::register");
-		$site->add_api("elberos_cabinet", "recovery_password1", "\\Elberos\\UserCabinet\\Api::recovery_password1");
-		$site->add_api("elberos_cabinet", "recovery_password2", "\\Elberos\\UserCabinet\\Api::recovery_password2");
-		$site->add_api("elberos_cabinet", "update_profile", "\\Elberos\\UserCabinet\\Api::update_profile");
-		$site->add_api("elberos_cabinet", "change_password", "\\Elberos\\UserCabinet\\Api::change_password");
-		$site->add_api("elberos_cabinet", "change_email", "\\Elberos\\UserCabinet\\Api::change_email");
+		$site->add_api("elberos_cabinet", "login", "\\Elberos\\UserCabinet\\Api::api_login");
+		$site->add_api("elberos_cabinet", "register", "\\Elberos\\UserCabinet\\Api::api_register");
+		$site->add_api("elberos_cabinet", "recovery_password1", "\\Elberos\\UserCabinet\\Api::api_recovery_password1");
+		$site->add_api("elberos_cabinet", "recovery_password2", "\\Elberos\\UserCabinet\\Api::api_recovery_password2");
+		$site->add_api("elberos_cabinet", "update_profile", "\\Elberos\\UserCabinet\\Api::api_update_profile");
+		$site->add_api("elberos_cabinet", "change_password", "\\Elberos\\UserCabinet\\Api::api_change_password");
+		$site->add_api("elberos_cabinet", "change_email", "\\Elberos\\UserCabinet\\Api::api_change_email");
 	}
 	
 	
@@ -56,7 +56,7 @@ class Api
 	/**
 	 * Register form
 	 */
-	public static function register($site)
+	public static function api_register($site)
 	{
 		global $wpdb;
 		
@@ -134,7 +134,7 @@ class Api
 	/**
 	 * Login form
 	 */
-	public static function login($site)
+	public static function api_login($site)
 	{
 		global $wpdb;
 		
@@ -212,7 +212,7 @@ class Api
 	/**
 	 * Logout form
 	 */
-	public static function logout($site)
+	public static function api_logout($site)
 	{
 		/* Logout */
 		setcookie('auth_token', '', 0, '/');
@@ -231,7 +231,7 @@ class Api
 	/**
 	 * Recover password1
 	 */
-	public static function recovery_password1($site)
+	public static function api_recovery_password1($site)
 	{
 		global $wpdb;
 		
@@ -280,7 +280,7 @@ class Api
 	/**
 	 * Recover password2
 	 */
-	public static function recovery_password2($site)
+	public static function api_recovery_password2($site)
 	{
 		global $wpdb;
 		
@@ -358,7 +358,7 @@ class Api
 	/**
 	 * Profile form
 	 */
-	public static function update_profile($site)
+	public static function api_update_profile($site)
 	{
 		global $wpdb;
 		
@@ -406,7 +406,7 @@ class Api
 	/**
 	 * Change password
 	 */
-	public static function change_password($site)
+	public static function api_change_password($site)
 	{
 		global $wpdb;
 		
@@ -467,7 +467,7 @@ class Api
 	/**
 	 * Change email
 	 */
-	public static function change_email($site)
+	public static function api_change_email($site)
 	{
 		global $wpdb;
 		
