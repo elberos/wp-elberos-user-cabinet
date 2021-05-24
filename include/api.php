@@ -614,6 +614,32 @@ class Api
 		
 		return [ $jwt, $current_user, $password ];
 	}
+	
+	
+	
+	/**
+	 * Find client
+	 */
+	public static function elberos_commerce_basket_find_client($client_id, $send_data, $basket, $products_meta)
+	{
+		global $wpdb;
+		
+		$email = isset($send_data['email']) ? $send_data['email'] : '';
+		
+		/* Find client */
+		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$sql = $wpdb->prepare
+		(
+			"SELECT * FROM $table_clients WHERE email = %s", $email
+		);
+		$row = $wpdb->get_row($sql, ARRAY_A);
+		if ($row)
+		{
+			$client_id = $row['id'];
+		}
+		
+		return $client_id;
+	}
 }
 
 }

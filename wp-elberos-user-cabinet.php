@@ -45,8 +45,15 @@ class Elberos_User_Cabinet_Plugin
 		add_action('elberos_register_routes', 'Elberos_User_Cabinet_Plugin::elberos_register_routes');
 		add_filter('elberos_twig', 'Elberos_User_Cabinet_Plugin::elberos_twig');
 		
+		/* Find client */
+		add_filter
+		(
+			'elberos_commerce_basket_find_client', '\\Elberos\\UserCabinet\\Api::elberos_commerce_basket_find_client',
+			10, 4
+		);
+		
 		/* Remove plugin updates */
-		add_filter( 'site_transient_update_plugins', 'Elberos_Commerce_Plugin::filter_plugin_updates' );
+		add_filter('site_transient_update_plugins', 'Elberos_Commerce_Plugin::filter_plugin_updates');
 	}
 	
 	
@@ -200,7 +207,6 @@ class Elberos_User_Cabinet_Plugin
 		list($jwt, $current_user) = \Elberos\UserCabinet\Api::get_current_user();
 		$site->jwt = $jwt;
 		$site->current_user = $current_user;
-		
 	}
 	
 	
