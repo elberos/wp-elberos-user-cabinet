@@ -52,8 +52,11 @@ class Elberos_User_Cabinet_Plugin
 			10, 4
 		);
 		
+		/* User cabinet menu */
+		add_filter('elberos_user_cabinet_menu', 'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu', 0);
+		
 		/* Remove plugin updates */
-		add_filter('site_transient_update_plugins', 'Elberos_Commerce_Plugin::filter_plugin_updates');
+		add_filter('site_transient_update_plugins', 'Elberos_User_Cabinet_Plugin::filter_plugin_updates');
 	}
 	
 	
@@ -207,6 +210,31 @@ class Elberos_User_Cabinet_Plugin
 		list($jwt, $current_user) = \Elberos\UserCabinet\Api::get_current_user();
 		$site->jwt = $jwt;
 		$site->current_user = $current_user;
+	}
+	
+	
+	
+	/**
+	 * User cabinet menu
+	 */
+	public static function elberos_user_cabinet_menu($menu)
+	{
+		$menu[] =
+		[
+			"href" => "/cabinet/profile/",
+			"label" => "Профиль",
+		];
+		$menu[] =
+		[
+			"href" => "/cabinet/change_password/",
+			"label" => "Изменить пароль",
+		];
+		$menu[] =
+		[
+			"href" => "/cabinet/change_email/",
+			"label" => "Изменить email",
+		];
+		return $menu;
 	}
 	
 	

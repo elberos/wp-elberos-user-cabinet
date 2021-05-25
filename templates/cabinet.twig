@@ -10,11 +10,13 @@
 		
 		<div class='page_cabinet_wrap'>
 			
+			{% set menu = function("apply_filters", "elberos_user_cabinet_menu", [])%}
+			
 			<div class='page_cabinet_menu'>
 				<ul>
-					<li><a class='nolink' href='/cabinet/profile/'>Профиль</a></li>
-					<li><a class='nolink' href='/cabinet/change_password/'>Изменить пароль</a></li>
-					<li><a class='nolink' href='/cabinet/change_email/'>Изменить email</a></li>
+					{% for item in menu %}
+						<li><a class='nolink' href='{{ item.href }}'>{{ item.label }}</a></li>
+					{% endfor %}
 				</ul>
 				<a class='nolink' href='/cabinet/logout/'>
 					<button class='button1 button-logout'>
