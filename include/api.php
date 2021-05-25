@@ -372,23 +372,11 @@ class Api
 			];
 		}
 		
-		$name = isset($_POST['name']) ? $_POST['name'] : "";
-		$phone = isset($_POST['phone']) ? $_POST['phone'] : "";
-		if ($name == "")
-		{
-			return
-			[
-				"message" => "Укажите имя",
-				"code" => -1,
-			];
-		}
-		
-		/* Get user item */
-		$item =
-		[
-			'name' => $name,
-			'phone' => $phone,
-		];
+		/* Process item */
+		$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+		$fields = array_keys( $user_fields->getDefault() );
+		$item = \Elberos\Update::intersect($_POST, $fields);
+		$item = $user_fields->processItem($item);
 		
 		/* Update user profile */
 		$table_clients = $wpdb->prefix . 'elberos_clients';

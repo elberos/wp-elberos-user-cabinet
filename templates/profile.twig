@@ -4,12 +4,7 @@
 
 <form class='web_form web_form--style1 web_form_login'>
 	
-	<div class='web_form_row'>
-		<input class='web_form_input web_form_field_value web_form_value web_form_input--text'
-			placeholder='E-mail' data-name="name" value='{{ site.current_user.name }}' />
-		<div class="web_form__field_result" data-name="name"
-			data-default="&nbsp;">&nbsp;</div>
-	</div>
+	{{ user_fields.renderForm(site.current_user, 'edit') | raw }}
 	
 	<div class='web_form_buttons'>
 		<button type='button' class='button1 button_profile--submit'>Обновить</button>
@@ -20,7 +15,29 @@
 </form>
 
 <script>
+function update_client_type()
+{
+	$('.web_form__row[data-name=name]').hide();
+	$('.web_form__row[data-name=surname]').hide();
+	$('.web_form__row[data-name=company_name]').hide();
+	var value = $('select[data-name=type]').val();
+	if (value == 1)
+	{
+		$('.web_form__row[data-name=name]').show();
+		$('.web_form__row[data-name=surname]').show();
+	}
+	else if (value == 2)
+	{
+		$('.web_form__row[data-name=company_name]').show();
+	}
+}
+
 onJQueryLoaded(function(){
+	
+	update_client_type();
+	$('select[name=type]').change(function(){
+		update_client_type();
+	});
 	
 	$('.web_form_login .button_profile--submit').click(function(){
 		

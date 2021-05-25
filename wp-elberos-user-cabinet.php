@@ -27,6 +27,7 @@ if ( !class_exists( 'Elberos_User_Cabinet_Plugin' ) )
 class Elberos_User_Cabinet_Plugin
 {
 	
+	
 	/**
 	 * Init Plugin
 	 */
@@ -52,8 +53,11 @@ class Elberos_User_Cabinet_Plugin
 			10, 4
 		);
 		
+		/* Client fields */
+		add_filter('elberos_user_fields', 'Elberos_User_Cabinet_Plugin::elberos_user_fields');
+		
 		/* User cabinet menu */
-		add_filter('elberos_user_cabinet_menu', 'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu', 0);
+		add_filter('elberos_user_cabinet_menu', 'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu');
 		
 		/* Remove plugin updates */
 		add_filter('site_transient_update_plugins', 'Elberos_User_Cabinet_Plugin::filter_plugin_updates');
@@ -174,6 +178,12 @@ class Elberos_User_Cabinet_Plugin
 			[
 				'title' => 'Профиль',
 				'description' => 'Профиль',
+				'render' => function ($site)
+				{
+					$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+					$site->context['user_fields'] = $user_fields;
+					return null;
+				},
 			]
 		);
 		
@@ -210,6 +220,78 @@ class Elberos_User_Cabinet_Plugin
 		list($jwt, $current_user) = \Elberos\UserCabinet\Api::get_current_user();
 		$site->jwt = $jwt;
 		$site->current_user = $current_user;
+	}
+	
+	
+	
+	/**
+	 * User fields
+	 */
+	public static function elberos_user_fields($fields)
+	{
+		$fields
+			
+			->addField
+			([
+				"api_name" => "type",
+				"type" => "select",
+				"label" => "Тип клиента",
+				"options" =>
+				[
+					["id"=>1, "value"=>"Физ лицо"],
+					["id"=>2, "value"=>"Юр лицо"],
+				],
+			])
+			
+			->addField
+			([
+				"api_name" => "name",
+				"label" => "Имя",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "surname",
+				"label" => "Фамилия",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "company_name",
+				"label" => "Название компании",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "search_name",
+				"show" => false,
+				"process_item" => function($item)
+				{
+					if ($item["type"] == 1) $item["search_name"] = $item["name"] . " " . $item["surname"];
+					if ($item["type"] == 2) $item["search_name"] = $item["company_name"];
+					return $item;
+				},
+			])
+			
+			->addField
+			([
+				"api_name" => "email",
+				"label" => "E-mail",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "phone",
+				"label" => "Телефон",
+				"type" => "input",
+			])
+		;
+		
+		return $fields;
 	}
 	
 	

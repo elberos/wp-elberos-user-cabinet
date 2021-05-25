@@ -37,6 +37,7 @@ class Clients
 
 class Clients_Table extends \WP_List_Table 
 {
+	public $fields = null;
 	
 	function __construct()
 	{
@@ -46,6 +47,8 @@ class Clients_Table extends \WP_List_Table
 			'singular' => 'elberos-user-cabinet',
 			'plural' => 'elberos-user-cabinet',
 		));
+		
+		$this->fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
 	}
 	
 	function get_table_name()
@@ -57,12 +60,9 @@ class Clients_Table extends \WP_List_Table
 	// Вывод значений по умолчанию
 	function get_default()
 	{
-		return array(
-			'id' => 0,
-			'name' => '',
-			'email' => '',
-			'phone' => '',
-		);
+		$res = $this->fields->getDefault();
+		$res['id'] = 0;
+		return $res;
 	}
 		
 	// Колонки таблицы
@@ -70,7 +70,8 @@ class Clients_Table extends \WP_List_Table
 	{
 		$columns = array(
 			'cb' => '<input type="checkbox" />', 
-			'name' => __('Имя', 'elberos-user-cabinet'),
+			'type' => __('Тип клиента', 'elberos-user-cabinet'),
+			'search_name' => __('Имя', 'elberos-user-cabinet'),
 			'email' => __('Email', 'elberos-user-cabinet'),
 			'phone' => __('Телефон', 'elberos-user-cabinet'),
 			'gmtime_add' => __('Дата регистрации', 'elberos-user-cabinet'),
@@ -122,6 +123,14 @@ class Clients_Table extends \WP_List_Table
 			'<input type="checkbox" name="id[]" value="%s" />',
 			$item['id']
 		);
+	}
+	
+	// client type
+	function column_type($item)
+	{
+		if ($item['type'] == 1) return 'Физ лицо';
+		if ($item['type'] == 2) return 'Юр лицо';
+		return '';
 	}
 	
 	// Дата регистрации
@@ -249,21 +258,16 @@ class Clients_Table extends \WP_List_Table
 	
 	function process_item($item)
 	{
-		$item = \Elberos\Update::intersect
-		(
-			$item,
-			[
-				"email",
-				"phone",
-				"name",
-			]
-		);
+		$fields = array_keys( $this->fields->getDefault() );
+		$item = \Elberos\Update::intersect($item, $fields);
 		
 		$item_id = (int) (isset($_REQUEST['id']) ? $_REQUEST['id'] : 0);
 		if ($item_id == 0)
 		{
 			$item['gmtime_add'] = \Elberos\dbtime();
 		}
+		
+		$item = $this->fields->processItem($item);
 		
 		return $item;
 	}
@@ -344,24 +348,15 @@ class Clients_Table extends \WP_List_Table
 	function display_form($item)
 	{
 		?>
-		<p>
-			<label for="name"><?= __('Имя', 'elberos-user-cabinet') ?>:</label>
-		<br>	
-			<input id="name" name="name" type="text" style="width: 100%" required
-				value="<?php echo esc_attr($item['name'])?>" >
-		</p>
-		<p>
-			<label for="email"><?= __('Email', 'elberos-user-cabinet') ?>:</label>
-		<br>	
-			<input id="email" name="email" type="text" style="width: 100%" required
-				value="<?php echo esc_attr($item['email'])?>" >
-		</p>
-		<p>
-			<label for="phone"><?= __('Телефон', 'elberos-user-cabinet') ?>:</label>
-		<br>	
-			<input id="phone" name="phone" type="text" style="width: 100%"
-				value="<?php echo esc_attr($item['phone'])?>" >
-		</p>
+		<style>
+		input.web_form_input, select.web_form_input{
+			width: 100%;
+			max-width: 100%;
+		}
+		</style>
+		
+		<?= $this->fields->renderForm($item, $item['id'] > 0 ? 'edit' : 'add') ?>
+		
 		<h2 style='padding-left: 0;'>Смена пароля</h2>
 		<p>
 			<label for="password1"><?= __('Введите пароль', 'elberos-user-cabinet') ?>:</label>
