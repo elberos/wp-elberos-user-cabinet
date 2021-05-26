@@ -61,10 +61,10 @@ class Api
 		global $wpdb;
 		
 		/* Get login */
-		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		$email = sanitize_user(isset($_POST["email"]) ? $_POST["email"] : "");
 		$name = isset($_POST["name"]) ? $_POST["name"] : "";
 		
-		if ($login == "")
+		if ($email == "")
 		{
 			return
 			[
@@ -96,7 +96,7 @@ class Api
 		$table_clients = $wpdb->prefix . 'elberos_clients';
 		$sql = $wpdb->prepare
 		(
-			"SELECT * FROM $table_clients WHERE email = %s", $login
+			"SELECT * FROM $table_clients WHERE email = %s", $email
 		);
 		$client = $wpdb->get_row($sql, ARRAY_A);
 		if ($client)
@@ -108,18 +108,21 @@ class Api
 			];
 		}
 		
-		// Register user
+		/* Process item */
+		$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+		$fields = array_keys( $user_fields->getDefault() );
+		$item = \Elberos\Update::intersect($_POST, $fields);
+		$item = $user_fields->processItem($item);
+		
+		/* Set password */
 		$password_hash = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);
-		$wpdb->insert
-		(
-			$table_clients,
-			[
-				'name' => $name,
-				'email' => $login,
-				'password' => $password_hash,
-				'gmtime_add' => \Elberos\dbtime(),
-			]
-		);
+		$item['password'] = $password_hash;
+		$item['gmtime_add'] = \Elberos\dbtime();
+		
+		//var_dump($item);
+		
+		/* Insert item */
+		$wpdb->insert($table_clients, $item);
 		
 		return
 		[
@@ -184,18 +187,7 @@ class Api
 		}
 		
 		/* Create JWT */
-		$expire = time() + 30*24*60*60;
-		$session = wp_generate_password(64, false, false);
-		$jwt = [
-			"u" => $row['id'],
-			"l" => $row['email'],
-			"s" => $session,
-			"e" => $expire,
-		];
-		$jwt = static::create_jwt($jwt);
-		
-		/* Set cookie */
-		setcookie('auth_token', $jwt, time() + 30*24*60*60, '/');
+		$jwt = static::create_session($row);
 		
 		return
 		[
@@ -521,6 +513,31 @@ class Api
 	
 	
 	/**
+	 * Create session
+	 */
+	public static function create_session($row)
+	{
+		/* Create JWT */
+		$expire = time() + 30*24*60*60;
+		$session = wp_generate_password(64, false, false);
+		$jwt =
+		[
+			"u" => $row['id'],
+			"l" => $row['email'],
+			"s" => $session,
+			"e" => $expire,
+		];
+		$jwt = static::create_jwt($jwt);
+		
+		/* Set cookie */
+		setcookie('auth_token', $jwt, time() + 30*24*60*60, '/');
+		
+		return $jwt;
+	}
+	
+	
+	
+	/**
 	 * Create JWT
 	 */
 	public static function create_jwt($data)
@@ -608,7 +625,7 @@ class Api
 	/**
 	 * Find client
 	 */
-	public static function elberos_commerce_basket_find_client($client_id, $send_data, $basket, $products_meta)
+	public static function elberos_commerce_basket_find_client($client_res, $send_data, $basket, $products_meta)
 	{
 		global $wpdb;
 		
@@ -623,10 +640,32 @@ class Api
 		$row = $wpdb->get_row($sql, ARRAY_A);
 		if ($row)
 		{
-			$client_id = $row['id'];
+			$client_res['register'] = false;
+			$client_res['client_id'] = $row['id'];
+			$client_res['item'] = $row;
 		}
 		
-		return $client_id;
+		/* Register client */
+		else
+		{
+			/* Process item */
+			$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+			$fields = array_keys( $user_fields->getDefault() );
+			$send_data = \Elberos\Update::intersect($send_data, $fields);
+			$send_data = $user_fields->processItem($send_data);
+			$send_data['gmtime_add'] = \Elberos\dbtime();
+			
+			/* Insert item */
+			$wpdb->insert($table_clients, $send_data);
+			
+			/* Invoice id */
+			$send_data['id'] = $wpdb->insert_id;
+			$client_res['register'] = true;
+			$client_res['client_id'] = $wpdb->insert_id;
+			$client_res['item'] = $send_data;
+		}
+		
+		return $client_res;
 	}
 }
 

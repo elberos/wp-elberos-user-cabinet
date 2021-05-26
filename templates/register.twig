@@ -14,21 +14,7 @@
 			
 			<form class='web_form web_form--style1 web_form_login'>
 				
-				<input class='web_form_wp_nonce' type='hidden' value='{{ function("\\Elberos\\create_nonce") }}' />
-				
-				<div class='web_form_row'>
-					<input class='web_form_input web_form_field_value web_form_value web_form_input--text'
-						placeholder='E-mail' data-name="login" />
-					<div class="web_form__field_result" data-name="login"
-						data-default="&nbsp;">&nbsp;</div>
-				</div>
-				
-				<div class='web_form_row'>
-					<input class='web_form_input web_form__field_value web_form_value web_form_input--text'
-						placeholder='Ваше имя' data-name="name" />
-					<div class="web_form__field_result" data-name="name"
-						data-default="&nbsp;">&nbsp;</div>
-				</div>
+				{{ user_fields.renderForm(site.current_user, 'edit') | raw }}
 				
 				<div class='web_form_row'>
 					<input class='web_form_input web_form_field_value web_form_value web_form_input--text'
@@ -64,7 +50,28 @@
 
 
 <script>
+function update_client_type()
+{
+	$('.web_form__row[data-name=name]').hide();
+	$('.web_form__row[data-name=surname]').hide();
+	$('.web_form__row[data-name=company_name]').hide();
+	var value = $('select[data-name=type]').val();
+	if (value == 1)
+	{
+		$('.web_form__row[data-name=name]').show();
+		$('.web_form__row[data-name=surname]').show();
+	}
+	else if (value == 2)
+	{
+		$('.web_form__row[data-name=company_name]').show();
+	}
+}
 onJQueryLoaded(function(){
+	
+	update_client_type();
+	$('select[name=type]').change(function(){
+		update_client_type();
+	});
 	
 	$('.web_form_login .button--submit').click(function(){
 		

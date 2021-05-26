@@ -124,7 +124,7 @@ class Elberos_User_Cabinet_Plugin
 				'description' => 'Авторизация',
 				'render' => function($site)
 				{
-					$res = \Elberos\UserCabinet\Api::logout($site);
+					$res = \Elberos\UserCabinet\Api::api_logout($site);
 					header('Location: ' . site_url("/"));
 					return "";
 				},
@@ -158,6 +158,12 @@ class Elberos_User_Cabinet_Plugin
 			[
 				'title' => 'Регистрация',
 				'description' => 'Регистрация',
+				'render' => function ($site)
+				{
+					$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+					$site->context['user_fields'] = $user_fields;
+					return null;
+				},
 			]
 		);
 		
@@ -236,6 +242,7 @@ class Elberos_User_Cabinet_Plugin
 				"api_name" => "type",
 				"type" => "select",
 				"label" => "Тип клиента",
+				"default" => 1,
 				"options" =>
 				[
 					["id"=>1, "value"=>"Физ лицо"],
