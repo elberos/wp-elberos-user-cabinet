@@ -44,7 +44,10 @@ class Elberos_User_Cabinet_Plugin
 		add_action('admin_menu', 'Elberos_User_Cabinet_Plugin::register_admin_menu');
 		add_action('elberos_setup_after', 'Elberos_User_Cabinet_Plugin::elberos_setup_after');
 		add_action('elberos_register_routes', 'Elberos_User_Cabinet_Plugin::elberos_register_routes');
-		add_filter('elberos_twig', 'Elberos_User_Cabinet_Plugin::elberos_twig');
+		add_action('elberos_twig', 'Elberos_User_Cabinet_Plugin::elberos_twig', 100);
+		
+		/* User register */
+		add_action('elberos_user_recovery_password1_after', '\\Elberos\\UserCabinet\\Api::recovery_password1_send_email');
 		
 		/* Find client */
 		add_filter
@@ -54,7 +57,7 @@ class Elberos_User_Cabinet_Plugin
 		);
 		
 		/* Client fields */
-		add_filter('elberos_user_fields', 'Elberos_User_Cabinet_Plugin::elberos_user_fields');
+		add_filter('elberos_struct_builder', 'Elberos_User_Cabinet_Plugin::elberos_struct_builder', 10);
 		
 		/* User cabinet menu */
 		add_filter('elberos_user_cabinet_menu', 'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu');
@@ -160,7 +163,7 @@ class Elberos_User_Cabinet_Plugin
 				'description' => 'Регистрация',
 				'render' => function ($site)
 				{
-					$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+					$user_fields = \Elberos\UserCabinet\Clients::fields("login", $site->current_user);
 					$site->context['user_fields'] = $user_fields;
 					return null;
 				},
@@ -186,7 +189,7 @@ class Elberos_User_Cabinet_Plugin
 				'description' => 'Профиль',
 				'render' => function ($site)
 				{
-					$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
+					$user_fields = \Elberos\UserCabinet\Clients::fields("login", $site->current_user);
 					$site->context['user_fields'] = $user_fields;
 					return null;
 				},
@@ -231,74 +234,155 @@ class Elberos_User_Cabinet_Plugin
 	
 	
 	/**
-	 * User fields
+	 * Struct builder
 	 */
-	public static function elberos_user_fields($fields)
+	public static function elberos_struct_builder($struct)
 	{
-		$fields
-			
-			->addField
-			([
-				"api_name" => "type",
-				"type" => "select",
-				"label" => "Тип клиента",
-				"default" => 1,
-				"options" =>
-				[
-					["id"=>1, "value"=>"Физ лицо"],
-					["id"=>2, "value"=>"Юр лицо"],
-				],
-			])
-			
-			->addField
-			([
-				"api_name" => "name",
-				"label" => "Имя",
-				"type" => "input",
-			])
-			
-			->addField
-			([
-				"api_name" => "surname",
-				"label" => "Фамилия",
-				"type" => "input",
-			])
-			
-			->addField
-			([
-				"api_name" => "company_name",
-				"label" => "Название компании",
-				"type" => "input",
-			])
-			
-			->addField
-			([
-				"api_name" => "search_name",
-				"show" => false,
-				"process_item" => function($item)
-				{
-					if ($item["type"] == 1) $item["search_name"] = $item["name"] . " " . $item["surname"];
-					if ($item["type"] == 2) $item["search_name"] = $item["company_name"];
-					return $item;
-				},
-			])
-			
-			->addField
-			([
-				"api_name" => "email",
-				"label" => "E-mail",
-				"type" => "input",
-			])
-			
-			->addField
-			([
-				"api_name" => "phone",
-				"label" => "Телефон",
-				"type" => "input",
-			])
-		;
+		if ($struct->form_name == "elberos_user")
+		{
+			$struct
+				
+				->addField
+				([
+					"api_name" => "type",
+					"type" => "select",
+					"label" => "Тип клиента",
+					"default" => 1,
+					"options" =>
+					[
+						["id"=>1, "value"=>"Физ лицо"],
+						["id"=>2, "value"=>"Юр лицо"],
+					],
+				])
+				
+				->addField
+				([
+					"api_name" => "name",
+					"label" => "Имя",
+					"type" => "input",
+					"php_style" => function ($struct, $field)
+					{
+						$type = $struct->getValue("type");
+						return
+						[
+							"row" =>
+							[
+								"display" => ($type == 1) ? "block" : "none",
+							],
+						];
+					},
+					"js_change" => function ()
+					{
+						return
+							'var value = $form.find("select[data-name=type]").val();' . "\n" .
+							'if (value == 1) $(".web_form__row[data-name=name]").show();' . "\n" .
+							'else $(".web_form__row[data-name=name]").hide();'
+						;
+					},
+				])
+				
+				->addField
+				([
+					"api_name" => "surname",
+					"label" => "Фамилия",
+					"type" => "input",
+					"php_style" => function ($struct, $field)
+					{
+						$type = $struct->getValue("type");
+						return
+						[
+							"row" =>
+							[
+								"display" => ($type == 1) ? "block" : "none",
+							],
+						];
+					},
+					"js_change" => function ()
+					{
+						return
+							'var value = $form.find("select[data-name=type]").val();' . "\n" .
+							'if (value == 1) $(".web_form__row[data-name=surname]").show();' . "\n" .
+							'else $(".web_form__row[data-name=surname]").hide();'
+						;
+					},
+				])
+				
+				->addField
+				([
+					"api_name" => "company_name",
+					"label" => "Название компании",
+					"type" => "input",
+					"php_style" => function ($struct, $field)
+					{
+						$type = $struct->getValue("type");
+						return
+						[
+							"row" =>
+							[
+								"display" => ($type == 2) ? "block" : "none",
+							],
+						];
+					},
+					"js_change" => function ()
+					{
+						return
+							'var value = $form.find("select[data-name=type]").val();' . "\n" .
+							'if (value == 2) $(".web_form__row[data-name=company_name]").show();' . "\n" .
+							'else $(".web_form__row[data-name=company_name]").hide();'
+						;
+					},
+				])
+				
+				->addField
+				([
+					"api_name" => "search_name",
+					"show" => false,
+					"process_item" => function($struct, $item)
+					{
+						if ($item["type"] == 1) $item["search_name"] = $item["name"] . " " . $item["surname"];
+						if ($item["type"] == 2) $item["search_name"] = $item["company_name"];
+						$item["search_name"] = trim($item["search_name"]);
+						return $item;
+					},
+				])
+				
+				->addField
+				([
+					"api_name" => "email",
+					"label" => "E-mail",
+					"type" => "input",
+				])
+				
+				->addField
+				([
+					"api_name" => "phone",
+					"label" => "Телефон",
+					"type" => "input",
+				])
+			;
+		}
 		
-		return $fields;
+		if ($struct->form_name == "elberos_user" and $struct->action == "login")
+		{
+			$struct
+				->addField
+				([
+					"api_name" => "password1",
+					"label" => "Придумайте пароль",
+					"type" => "password",
+					"virtual" => true,
+				])
+				->addField
+				([
+					"api_name" => "password2",
+					"label" => "Повторите пароль",
+					"type" => "password",
+					"virtual" => true,
+				])
+			;
+		}
+		
+		return $struct;
 	}
 	
 	
@@ -338,6 +422,7 @@ class Elberos_User_Cabinet_Plugin
 }
 
 include __DIR__ . "/include/api.php";
+include __DIR__ . "/include/helper.php";
 
 Elberos_User_Cabinet_Plugin::init();
 \Elberos\UserCabinet\Api::init();

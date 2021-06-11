@@ -24,17 +24,6 @@ namespace Elberos\UserCabinet;
 
 if ( !class_exists( Clients::class ) ) 
 {
-
-class Clients
-{
-	public static function show()
-	{
-		$table = new Clients_Table();
-		$table->display();		
-	}
-}
-
-
 class Clients_Table extends \WP_List_Table 
 {
 	public $fields = null;
@@ -54,7 +43,7 @@ class Clients_Table extends \WP_List_Table
 	function get_table_name()
 	{
 		global $wpdb;
-		return $wpdb->prefix . 'elberos_clients';
+		return $wpdb->base_prefix . 'elberos_clients';
 	}
 	
 	// Вывод значений по умолчанию

@@ -81,8 +81,17 @@ class Api
 			];
 		}
 		
+		/* Check password */
 		$password1 = isset($_POST['password1']) ? $_POST['password1'] : "";
 		$password2 = isset($_POST['password2']) ? $_POST['password2'] : "";
+		if ($password1 == "")
+		{
+			return
+			[
+				"message" => "Пустой пароль",
+				"code" => -1,
+			];
+		}
 		if ($password1 != "" and $password1 != $password2)
 		{
 			return
@@ -92,8 +101,19 @@ class Api
 			];
 		}
 		
+		/* Validation */
+		$message = apply_filters("elberos_user_register_validation", "");
+		if ($message != "")
+		{
+			return
+			[
+				"message" => $message,
+				"code" => -1,
+			];
+		}
+		
 		/* Find user */
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s", $email
@@ -109,20 +129,19 @@ class Api
 		}
 		
 		/* Process item */
-		$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
-		$fields = array_keys( $user_fields->getDefault() );
-		$item = \Elberos\Update::intersect($_POST, $fields);
-		$item = $user_fields->processItem($item);
+		$user_fields = \Elberos\UserCabinet\Clients::fields("login", $_POST);
+		$item = $user_fields->processItem();
 		
 		/* Set password */
 		$password_hash = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);
 		$item['password'] = $password_hash;
 		$item['gmtime_add'] = \Elberos\dbtime();
 		
-		//var_dump($item);
-		
 		/* Insert item */
 		$wpdb->insert($table_clients, $item);
+		
+		/* Apply action */
+		do_action("elberos_user_register_after", $item);
 		
 		return
 		[
@@ -157,7 +176,7 @@ class Api
 		
 		/* Check password */
 		global $wpdb;
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s", $login
@@ -188,6 +207,9 @@ class Api
 		
 		/* Create JWT */
 		$jwt = static::create_session($row);
+		
+		/* Apply action */
+		do_action("elberos_user_login_after", $row);
 		
 		return
 		[
@@ -231,7 +253,7 @@ class Api
 		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
 		
 		/* Find user */
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s", $login
@@ -260,11 +282,41 @@ class Api
 			]
 		);
 		
+		/* Set recovery code */
+		$client["recovery_password_code"] = $recovery_code;
+		
+		/* Apply action */
+		do_action("elberos_user_recovery_password1_after", $client);
+		
 		return
 		[
 			"message" => "Код был выслан на указанную почту",
 			"code" => 1,
 		];
+	}
+	
+	
+	
+	/**
+	 * Send email
+	 */
+	public static function recovery_password1_send_email($client)
+	{
+		$recover_link = site_url("/cabinet/recovery_password2/?recovery_password_code=" .
+			htmlspecialchars($client['recovery_password_code']) . "&login=" .
+			htmlspecialchars($client['email'])
+		);
+		\Elberos\send_email
+		(
+			"noreply",
+			$client["email"],
+			"@user-cabinet/email_recovery_password1.twig",
+			[
+				"recover_link" => $recover_link,
+				"client" => $client,
+				"title" => "Восстановление пароля на сайте " . \Elberos\get_site_name(),
+			]
+		);
 	}
 	
 	
@@ -300,7 +352,7 @@ class Api
 		
 		/* Find user */
 		$current_date = \Elberos\dbtime( time() );
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s and recovery_password_code = %s and recovery_password_expire > %s and recovery_password_expire is not null",
@@ -371,7 +423,7 @@ class Api
 		$item = $user_fields->processItem($item);
 		
 		/* Update user profile */
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$result = $wpdb->update($table_clients, $item, ['id' => $current_user['id']]);
 		
 		return
@@ -423,7 +475,7 @@ class Api
 		$password = password_hash($new_password1, PASSWORD_BCRYPT, ['cost'=>11]);
 		
 		/* Update user profile */
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$result = $wpdb->update
 		(
 			$table_clients,
@@ -473,7 +525,7 @@ class Api
 			];
 		}
 		
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		
 		/* Check if email exists */
 		$email = sanitize_user(isset($_POST['email']) ? $_POST['email'] : "");
@@ -598,7 +650,7 @@ class Api
 			$jwt = $jwt;
 			$user_id = $jwt['u'];
 			
-			$table_clients = $wpdb->prefix . 'elberos_clients';
+			$table_clients = $wpdb->base_prefix . 'elberos_clients';
 			$sql = $wpdb->prepare
 			(
 				"SELECT * FROM $table_clients WHERE id = %d", $user_id
@@ -632,7 +684,7 @@ class Api
 		$email = isset($send_data['email']) ? $send_data['email'] : '';
 		
 		/* Find client */
-		$table_clients = $wpdb->prefix . 'elberos_clients';
+		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s", $email
