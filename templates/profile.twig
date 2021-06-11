@@ -4,7 +4,7 @@
 
 <form class='web_form web_form--style1 web_form_login'>
 	
-	{{ user_fields.renderForm(site.current_user, 'edit') | raw }}
+	{{ user_fields.renderForm() | raw }}
 	
 	<div class='web_form_buttons'>
 		<button type='button' class='button1 button_profile--submit'>Обновить</button>
@@ -14,30 +14,10 @@
 	
 </form>
 
-<script>
-function update_client_type()
-{
-	$('.web_form__row[data-name=name]').hide();
-	$('.web_form__row[data-name=surname]').hide();
-	$('.web_form__row[data-name=company_name]').hide();
-	var value = $('select[data-name=type]').val();
-	if (value == 1)
-	{
-		$('.web_form__row[data-name=name]').show();
-		$('.web_form__row[data-name=surname]').show();
-	}
-	else if (value == 2)
-	{
-		$('.web_form__row[data-name=company_name]').show();
-	}
-}
 
+{{ user_fields.renderJS() | raw }}
+<script>
 onJQueryLoaded(function(){
-	
-	update_client_type();
-	$('select[name=type]').change(function(){
-		update_client_type();
-	});
 	
 	$('.web_form_login .button_profile--submit').click(function(){
 		

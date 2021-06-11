@@ -129,7 +129,7 @@ class Api
 		}
 		
 		/* Process item */
-		$user_fields = \Elberos\UserCabinet\Clients::fields("login", $_POST);
+		$user_fields = \Elberos\UserCabinet\User::create("register", $_POST);
 		$item = $user_fields->processItem();
 		
 		/* Set password */
@@ -417,10 +417,9 @@ class Api
 		}
 		
 		/* Process item */
-		$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
-		$fields = array_keys( $user_fields->getDefault() );
-		$item = \Elberos\Update::intersect($_POST, $fields);
-		$item = $user_fields->processItem($item);
+		$user_fields = \Elberos\UserCabinet\User::create("profile", $current_user);
+		$user_fields->update($_POST);
+		$item = $user_fields->processItem();
 		
 		/* Update user profile */
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';

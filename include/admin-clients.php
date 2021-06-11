@@ -24,6 +24,16 @@ namespace Elberos\UserCabinet;
 
 if ( !class_exists( Clients::class ) ) 
 {
+
+class Clients
+{
+	public static function show()
+	{
+		$table = new Clients_Table();
+		$table->display();
+	}
+}
+
 class Clients_Table extends \WP_List_Table 
 {
 	public $fields = null;
