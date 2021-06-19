@@ -40,9 +40,9 @@ class User
 	/**
 	 * Create user
 	 */
-	public static function create($action, $item)
+	public static function create($action)
 	{
-		return \Elberos\StructBuilder::create("elberos_user", $action, $item);
+		return \Elberos\StructBuilder::create("elberos_user", $action);
 	}
 	
 	
@@ -50,9 +50,9 @@ class User
 	/**
 	 * Php style for name field
 	 */
-	public static function php_style_name($struct, $field)
+	public static function php_style_name($struct, $field, $item)
 	{
-		$type = $struct->getValue("type");
+		$type = $struct->getValue($item, "type");
 		return
 		[
 			"row" =>
@@ -67,12 +67,12 @@ class User
 	/**
 	 * JS change for name field
 	 */
-	public static function js_change_name($struct)
+	public static function js_change_name($struct, $item)
 	{
 		return
 			'var value = $form.find("select[data-name=type]").val();' . "\n" .
-			'if (value == 1) $(".web_form__row[data-name=name]").show();' . "\n" .
-			'else $(".web_form__row[data-name=name]").hide();'
+			'if (value == 1) jQuery(".web_form__row[data-name=name]").show();' . "\n" .
+			'else jQuery(".web_form__row[data-name=name]").hide();'
 		;
 	}
 	
@@ -81,9 +81,9 @@ class User
 	/**
 	 * Php style for surname field
 	 */
-	public static function php_style_surname($struct, $field)
+	public static function php_style_surname($struct, $field, $item)
 	{
-		$type = $struct->getValue("type");
+		$type = $struct->getValue($item, "type");
 		return
 		[
 			"row" =>
@@ -98,12 +98,12 @@ class User
 	/**
 	 * JS change for surname field
 	 */
-	public static function js_change_surname($struct)
+	public static function js_change_surname($struct, $item)
 	{
 		return
 			'var value = $form.find("select[data-name=type]").val();' . "\n" .
-			'if (value == 1) $(".web_form__row[data-name=surname]").show();' . "\n" .
-			'else $(".web_form__row[data-name=surname]").hide();'
+			'if (value == 1) jQuery(".web_form__row[data-name=surname]").show();' . "\n" .
+			'else jQuery(".web_form__row[data-name=surname]").hide();'
 		;
 	}
 	
@@ -112,9 +112,9 @@ class User
 	/**
 	 * Php style for company_name field
 	 */
-	public static function php_style_company_name($struct, $field)
+	public static function php_style_company_name($struct, $field, $item)
 	{
-		$type = $struct->getValue("type");
+		$type = $struct->getValue($item, "type");
 		return
 		[
 			"row" =>
@@ -129,12 +129,12 @@ class User
 	/**
 	 * JS change for company_name field
 	 */
-	public static function js_change_company_name($struct)
+	public static function js_change_company_name($struct, $item)
 	{
 		return
 			'var value = $form.find("select[data-name=type]").val();' . "\n" .
-			'if (value == 2) $(".web_form__row[data-name=company_name]").show();' . "\n" .
-			'else $(".web_form__row[data-name=company_name]").hide();'
+			'if (value == 2) jQuery(".web_form__row[data-name=company_name]").show();' . "\n" .
+			'else jQuery(".web_form__row[data-name=company_name]").hide();'
 		;
 	}
 	
@@ -143,13 +143,13 @@ class User
 	/**
 	 * Process item search name
 	 */
-	public static function process_item_search_name($struct, $item)
+	public static function process_item_search_name($struct, $item, $res)
 	{
-		if ($struct->item == null) return $item;
-		if ($struct->item["type"] == 1) $item["search_name"] = $struct->item["name"] . " " . $struct->item["surname"];
-		if ($struct->item["type"] == 2) $item["search_name"] = $struct->item["company_name"];
-		$item["search_name"] = trim($item["search_name"]);
-		return $item;
+		if ($item == null) return $res;
+		if ($item["type"] == 1) $res["search_name"] = $item["name"] . " " . $item["surname"];
+		if ($item["type"] == 2) $res["search_name"] = $item["company_name"];
+		$res["search_name"] = trim($res["search_name"]);
+		return $res;
 	}
 	
 	
@@ -167,19 +167,19 @@ class User
 				([
 					"api_name" => "type",
 					"type" => "select",
-					"label" => "Òèï êëèåíòà",
+					"label" => "Ğ¢Ğ¸Ğ¿ ĞºĞ»Ğ¸ĞµĞ½Ñ‚Ğ°",
 					"default" => 1,
 					"options" =>
 					[
-						["id"=>1, "value"=>"Ôèç ëèöî"],
-						["id"=>2, "value"=>"Şğ ëèöî"],
+						["id"=>1, "value"=>"Ğ¤Ğ¸Ğ· Ğ»Ğ¸Ñ†Ğ¾"],
+						["id"=>2, "value"=>"Ğ®Ñ€ Ğ»Ğ¸Ñ†Ğ¾"],
 					],
 				])
 				
 				->addField
 				([
 					"api_name" => "name",
-					"label" => "Èìÿ",
+					"label" => "Ğ˜Ğ¼Ñ",
 					"type" => "input",
 					"php_style" => [static::class, "php_style_name"],
 					"js_change" => [static::class, "js_change_name"],
@@ -188,7 +188,7 @@ class User
 				->addField
 				([
 					"api_name" => "surname",
-					"label" => "Ôàìèëèÿ",
+					"label" => "Ğ¤Ğ°Ğ¼Ğ¸Ğ»Ğ¸Ñ",
 					"type" => "input",
 					"php_style" => [static::class, "php_style_surname"],
 					"js_change" => [static::class, "js_change_surname"],
@@ -197,7 +197,7 @@ class User
 				->addField
 				([
 					"api_name" => "company_name",
-					"label" => "Íàçâàíèå êîìïàíèè",
+					"label" => "ĞĞ°Ğ·Ğ²Ğ°Ğ½Ğ¸Ğµ ĞºĞ¾Ğ¼Ğ¿Ğ°Ğ½Ğ¸Ğ¸",
 					"type" => "input",
 					"php_style" => [static::class, "php_style_company_name"],
 					"js_change" => [static::class, "js_change_company_name"],
@@ -220,7 +220,7 @@ class User
 				->addField
 				([
 					"api_name" => "phone",
-					"label" => "Òåëåôîí",
+					"label" => "Ğ¢ĞµĞ»ĞµÑ„Ğ¾Ğ½",
 					"type" => "input",
 				])
 			;
@@ -233,14 +233,14 @@ class User
 				->addField
 				([
 					"api_name" => "password1",
-					"label" => "Ïğèäóìàéòå ïàğîëü",
+					"label" => "ĞŸÑ€Ğ¸Ğ´ÑƒĞ¼Ğ°Ğ¹Ñ‚Ğµ Ğ¿Ğ°Ñ€Ğ¾Ğ»ÑŒ",
 					"type" => "password",
 					"virtual" => true,
 				])
 				->addField
 				([
 					"api_name" => "password2",
-					"label" => "Ïîâòîğèòå ïàğîëü",
+					"label" => "ĞŸĞ¾Ğ²Ñ‚Ğ¾Ñ€Ğ¸Ñ‚Ğµ Ğ¿Ğ°Ñ€Ğ¾Ğ»ÑŒ",
 					"type" => "password",
 					"virtual" => true,
 				])

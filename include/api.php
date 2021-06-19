@@ -129,13 +129,18 @@ class Api
 		}
 		
 		/* Process item */
-		$user_fields = \Elberos\UserCabinet\User::create("register", $_POST);
-		$item = $user_fields->processItem();
+		$user_fields = \Elberos\UserCabinet\User::create("register");
+		$item = $user_fields->getDefault();
+		$item = $user_fields->update($item, $_POST);
+		$item = $user_fields->processItem($item, true);
 		
 		/* Set password */
 		$password_hash = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);
 		$item['password'] = $password_hash;
 		$item['gmtime_add'] = \Elberos\dbtime();
+		
+		/* Apply action */
+		$item = apply_filters("elberos_user_register_before", $item);
 		
 		/* Insert item */
 		$wpdb->insert($table_clients, $item);
@@ -417,9 +422,9 @@ class Api
 		}
 		
 		/* Process item */
-		$user_fields = \Elberos\UserCabinet\User::create("profile", $current_user);
-		$user_fields->update($_POST);
-		$item = $user_fields->processItem();
+		$user_fields = \Elberos\UserCabinet\User::create("profile");
+		$item = $user_fields->update($current_user, $_POST);
+		$item = $user_fields->processItem($item);
 		
 		/* Update user profile */
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
@@ -581,7 +586,19 @@ class Api
 		$jwt = static::create_jwt($jwt);
 		
 		/* Set cookie */
-		setcookie('auth_token', $jwt, time() + 30*24*60*60, '/');
+		$domain = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : "";
+		if (is_multisite())
+		{
+			$arr = explode(".", $domain);
+			$arr = array_slice($arr, count($arr) - 2, 2);
+			$domain = implode(".", $arr);
+			$domain = "." . $domain;
+			setcookie('auth_token', $jwt, time() + 30*24*60*60, '/', $domain);
+		}
+		else
+		{
+			setcookie('auth_token', $jwt, time() + 30*24*60*60, '/');
+		}
 		
 		return $jwt;
 	}
@@ -671,53 +688,6 @@ class Api
 		return [ $jwt, $current_user, $password ];
 	}
 	
-	
-	
-	/**
-	 * Find client
-	 */
-	public static function elberos_commerce_basket_find_client($client_res, $send_data, $basket, $products_meta)
-	{
-		global $wpdb;
-		
-		$email = isset($send_data['email']) ? $send_data['email'] : '';
-		
-		/* Find client */
-		$table_clients = $wpdb->base_prefix . 'elberos_clients';
-		$sql = $wpdb->prepare
-		(
-			"SELECT * FROM $table_clients WHERE email = %s", $email
-		);
-		$row = $wpdb->get_row($sql, ARRAY_A);
-		if ($row)
-		{
-			$client_res['register'] = false;
-			$client_res['client_id'] = $row['id'];
-			$client_res['item'] = $row;
-		}
-		
-		/* Register client */
-		else
-		{
-			/* Process item */
-			$user_fields = apply_filters('elberos_user_fields', new \Elberos\StructBuilder());
-			$fields = array_keys( $user_fields->getDefault() );
-			$send_data = \Elberos\Update::intersect($send_data, $fields);
-			$send_data = $user_fields->processItem($send_data);
-			$send_data['gmtime_add'] = \Elberos\dbtime();
-			
-			/* Insert item */
-			$wpdb->insert($table_clients, $send_data);
-			
-			/* Invoice id */
-			$send_data['id'] = $wpdb->insert_id;
-			$client_res['register'] = true;
-			$client_res['client_id'] = $wpdb->insert_id;
-			$client_res['item'] = $send_data;
-		}
-		
-		return $client_res;
-	}
 }
 
 }

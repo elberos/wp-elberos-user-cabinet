@@ -49,13 +49,6 @@ class Elberos_User_Cabinet_Plugin
 		/* User register */
 		add_action('elberos_user_recovery_password1_after', '\\Elberos\\UserCabinet\\Api::recovery_password1_send_email');
 		
-		/* Find client */
-		add_filter
-		(
-			'elberos_commerce_basket_find_client', '\\Elberos\\UserCabinet\\Api::elberos_commerce_basket_find_client',
-			10, 4
-		);
-		
 		/* User cabinet menu */
 		add_filter('elberos_user_cabinet_menu', 'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu');
 		
@@ -163,7 +156,7 @@ class Elberos_User_Cabinet_Plugin
 				'description' => 'Регистрация',
 				'render' => function ($site)
 				{
-					$user_fields = \Elberos\UserCabinet\User::create("register", $site->current_user);
+					$user_fields = \Elberos\UserCabinet\User::create("register", []);
 					$site->context['user_fields'] = $user_fields;
 					return null;
 				},
@@ -240,16 +233,19 @@ class Elberos_User_Cabinet_Plugin
 	{
 		$menu[] =
 		[
+			"route_name" => "site:cabinet:profile",
 			"href" => "/cabinet/profile/",
 			"label" => "Профиль",
 		];
 		$menu[] =
 		[
+			"route_name" => "site:cabinet:change_password",
 			"href" => "/cabinet/change_password/",
 			"label" => "Изменить пароль",
 		];
 		$menu[] =
 		[
+			"route_name" => "site:cabinet:change_email",
 			"href" => "/cabinet/change_email/",
 			"label" => "Изменить email",
 		];
@@ -268,7 +264,6 @@ class Elberos_User_Cabinet_Plugin
 }
 
 include __DIR__ . "/include/api.php";
-include __DIR__ . "/include/helper.php";
 include __DIR__ . "/entity/User.php";
 
 Elberos_User_Cabinet_Plugin::init();
