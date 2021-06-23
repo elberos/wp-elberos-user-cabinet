@@ -210,6 +210,18 @@ class Api
 			];
 		}
 		
+		/* If account is blocked */
+		if ($row['is_deleted'])
+		{
+			return
+			[
+				"success" => false,
+				"message" => "Ваш аккаунт был заблокирован",
+				"fields" => [],
+				"code" => -1,
+			];
+		}
+		
 		/* Create JWT */
 		$jwt = static::create_session($row);
 		
@@ -233,8 +245,20 @@ class Api
 	 */
 	public static function api_logout($site)
 	{
-		/* Logout */
-		setcookie('auth_token', '', 0, '/');
+		/* Set cookie */
+		$domain = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : "";
+		if (is_multisite())
+		{
+			$arr = explode(".", $domain);
+			$arr = array_slice($arr, count($arr) - 2, 2);
+			$domain = implode(".", $arr);
+			$domain = "." . $domain;
+			setcookie('auth_token', '', 0, '/', $domain);
+		}
+		else
+		{
+			setcookie('auth_token', '', 0, '/');
+		}
 		
 		return
 		[
@@ -420,6 +444,14 @@ class Api
 				"code" => -1,
 			];
 		}
+		if ($current_user['is_deleted'])
+		{
+			return
+			[
+				"message" => "Пользователь заблокирован",
+				"code" => -2,
+			];
+		}
 		
 		/* Process item */
 		$user_fields = \Elberos\UserCabinet\User::create("profile");
@@ -453,6 +485,14 @@ class Api
 			[
 				"message" => "Вы не авторизованы",
 				"code" => -1,
+			];
+		}
+		if ($current_user['is_deleted'])
+		{
+			return
+			[
+				"message" => "Пользователь заблокирован",
+				"code" => -2,
 			];
 		}
 		
@@ -516,6 +556,14 @@ class Api
 				"message" => "Вы не авторизованы",
 				"fields" => [],
 				"code" => -1,
+			];
+		}
+		if ($current_user['is_deleted'])
+		{
+			return
+			[
+				"message" => "Пользователь заблокирован",
+				"code" => -2,
 			];
 		}
 		

@@ -32,7 +32,7 @@ class User
 	 */
 	public static function init()
 	{
-		add_filter('elberos_struct_builder', '\\Elberos\\UserCabinet\\User::elberos_struct_builder', 10);
+		add_filter('elberos_struct_builder', '\\Elberos\\UserCabinet\\User::elberos_struct_builder', -1);
 	}
 	
 	
@@ -40,9 +40,9 @@ class User
 	/**
 	 * Create user
 	 */
-	public static function create($action)
+	public static function create($action, $init = null)
 	{
-		return \Elberos\StructBuilder::create("elberos_user", $action);
+		return \Elberos\StructBuilder::create("elberos_user", $action, $init);
 	}
 	
 	

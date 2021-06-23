@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WordPress User Cabinet
  * Description: User Cabinet plugin for WordPress
- * Version:     0.1.0
+ * Version:     0.2.0
  * Author:      Elberos team <support@elberos.org>
  * License:     Apache License 2.0
  *
@@ -114,15 +114,27 @@ class Elberos_User_Cabinet_Plugin
 		$site->add_route
 		(
 			"site:cabinet:logout", "/cabinet/logout/",
-			null,
+			"@user-cabinet/logout.twig",
 			[
-				'title' => 'Авторизация',
-				'description' => 'Авторизация',
+				'title' => 'Выйти из кабинета',
+				'description' => 'Выйти из кабинета',
+			]
+		);
+		
+		$site->add_route
+		(
+			"site:cabinet:logout:success", "/cabinet/logout/success/",
+			"@user-cabinet/logout-success.twig",
+			[
+				'title' => 'Вы успешно вышли из кабинета',
+				'description' => 'Вы успешно вышли из кабинета',
 				'render' => function($site)
 				{
 					$res = \Elberos\UserCabinet\Api::api_logout($site);
-					header('Location: ' . site_url("/"));
-					return "";
+					$site->jwt = null;
+					$site->current_user = null;
+					//header('Location: ' . site_url("/"));
+					return null;
 				},
 			]
 		);
@@ -182,8 +194,9 @@ class Elberos_User_Cabinet_Plugin
 				'description' => 'Профиль',
 				'render' => function ($site)
 				{
-					$user_fields = \Elberos\UserCabinet\User::create("profile", $site->current_user);
+					$user_fields = \Elberos\UserCabinet\User::create("profile");
 					$site->context['user_fields'] = $user_fields;
+					//var_dump($user_fields);
 					return null;
 				},
 			]
