@@ -47,7 +47,25 @@ class Clients_Table extends \WP_List_Table
 			'plural' => 'elberos-user-cabinet',
 		));
 		
-		$this->fields = \Elberos\UserCabinet\User::create("admin_clients");
+		$this->fields = \Elberos\UserCabinet\User::create
+		(
+			"admin_clients",
+			function ($struct)
+			{
+				$struct
+					->setFormFields([
+						"type",
+						"name",
+						"surname",
+						"company_name",
+						"email",
+						"phone",
+					])
+				;
+				
+				return $struct;
+			}
+		);
 	}
 	
 	function get_table_name()

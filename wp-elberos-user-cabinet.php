@@ -27,12 +27,23 @@ if ( !class_exists( 'Elberos_User_Cabinet_Plugin' ) )
 class Elberos_User_Cabinet_Plugin
 {
 	
-	
 	/**
 	 * Init Plugin
 	 */
 	public static function init()
 	{
+		include __DIR__ . "/include/api.php";
+		\Elberos\UserCabinet\Api::init();
+		
+		/* Load entities */
+		add_action(
+			'plugins_loaded',
+			function()
+			{
+				include __DIR__ . "/entity/User.php";
+			},
+		);
+		
 		add_action
 		(
 			'admin_init', 
@@ -54,9 +65,6 @@ class Elberos_User_Cabinet_Plugin
 		
 		/* Remove plugin updates */
 		add_filter('site_transient_update_plugins', 'Elberos_User_Cabinet_Plugin::filter_plugin_updates');
-		
-		/* Init entity */
-		\Elberos\UserCabinet\User::init();
 	}
 	
 	
@@ -276,10 +284,6 @@ class Elberos_User_Cabinet_Plugin
 	}
 }
 
-include __DIR__ . "/include/api.php";
-include __DIR__ . "/entity/User.php";
-
 Elberos_User_Cabinet_Plugin::init();
-\Elberos\UserCabinet\Api::init();
 
 }

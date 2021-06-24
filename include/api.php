@@ -64,6 +64,17 @@ class Api
 		$email = sanitize_user(isset($_POST["email"]) ? $_POST["email"] : "");
 		$name = isset($_POST["name"]) ? $_POST["name"] : "";
 		
+		/* Captcha check */
+		$captcha = isset($_POST["captcha"]) ? $_POST["captcha"] : "";
+		if (!\Elberos\captcha_validation($captcha))
+		{
+			return
+			[
+				"message" => "Неверный код с картинки.<br/>Попробуйте обновить картинку, кликнув по ней, и ввести код заново",
+				"code" => -100,
+			];
+		}
+		
 		if ($email == "")
 		{
 			return
@@ -132,7 +143,7 @@ class Api
 		$user_fields = \Elberos\UserCabinet\User::create("register");
 		$item = $user_fields->getDefault();
 		$item = $user_fields->update($item, $_POST);
-		$item = $user_fields->processItem($item, true);
+		$item = $user_fields->processItem($item);
 		
 		/* Set password */
 		$password_hash = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);

@@ -24,212 +24,84 @@ namespace Elberos\UserCabinet;
 if ( !class_exists( User::class ) ) 
 {
 
-class User
+class User extends \Elberos\StructBuilder
 {
 	
 	/**
-	 * Init
+	 * Get entity name
 	 */
-	public static function init()
+	public static function getEntityName()
 	{
-		add_filter('elberos_struct_builder', '\\Elberos\\UserCabinet\\User::elberos_struct_builder', -1);
+		return "elberos_user";
 	}
 	
 	
-	
 	/**
-	 * Create user
+	 * Init struct
 	 */
-	public static function create($action, $init = null)
+	public function init()
 	{
-		return \Elberos\StructBuilder::create("elberos_user", $action, $init);
-	}
-	
-	
-	
-	/**
-	 * Php style for name field
-	 */
-	public static function php_style_name($struct, $field, $item)
-	{
-		$type = $struct->getValue($item, "type");
-		return
-		[
-			"row" =>
-			[
-				"display" => ($type == 1) ? "block" : "none",
-			],
-		];
-	}
-	
-	
-	
-	/**
-	 * JS change for name field
-	 */
-	public static function js_change_name($struct, $item)
-	{
-		return
-			'var value = $form.find("select[data-name=type]").val();' . "\n" .
-			'if (value == 1) jQuery(".web_form__row[data-name=name]").show();' . "\n" .
-			'else jQuery(".web_form__row[data-name=name]").hide();'
+		$this
+			
+			->addField
+			([
+				"api_name" => "type",
+				"type" => "select",
+				"label" => "Тип клиента",
+				"default" => 1,
+				"options" =>
+				[
+					["id"=>1, "value"=>"Физ лицо"],
+					["id"=>2, "value"=>"Юр лицо"],
+				],
+			])
+			
+			->addField
+			([
+				"api_name" => "name",
+				"label" => "Имя",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "surname",
+				"label" => "Фамилия",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "company_name",
+				"label" => "Название компании",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "search_name",
+				"show" => false,
+			])
+			
+			->addField
+			([
+				"api_name" => "email",
+				"label" => "E-mail",
+				"type" => "input",
+			])
+			
+			->addField
+			([
+				"api_name" => "phone",
+				"label" => "Телефон",
+				"type" => "input",
+			])
 		;
-	}
-	
-	
-	
-	/**
-	 * Php style for surname field
-	 */
-	public static function php_style_surname($struct, $field, $item)
-	{
-		$type = $struct->getValue($item, "type");
-		return
-		[
-			"row" =>
-			[
-				"display" => ($type == 1) ? "block" : "none",
-			],
-		];
-	}
-	
-	
-	
-	/**
-	 * JS change for surname field
-	 */
-	public static function js_change_surname($struct, $item)
-	{
-		return
-			'var value = $form.find("select[data-name=type]").val();' . "\n" .
-			'if (value == 1) jQuery(".web_form__row[data-name=surname]").show();' . "\n" .
-			'else jQuery(".web_form__row[data-name=surname]").hide();'
-		;
-	}
-	
-	
-	
-	/**
-	 * Php style for company_name field
-	 */
-	public static function php_style_company_name($struct, $field, $item)
-	{
-		$type = $struct->getValue($item, "type");
-		return
-		[
-			"row" =>
-			[
-				"display" => ($type == 2) ? "block" : "none",
-			],
-		];
-	}
-	
-	
-	
-	/**
-	 * JS change for company_name field
-	 */
-	public static function js_change_company_name($struct, $item)
-	{
-		return
-			'var value = $form.find("select[data-name=type]").val();' . "\n" .
-			'if (value == 2) jQuery(".web_form__row[data-name=company_name]").show();' . "\n" .
-			'else jQuery(".web_form__row[data-name=company_name]").hide();'
-		;
-	}
-	
-	
-	
-	/**
-	 * Process item search name
-	 */
-	public static function process_item_search_name($struct, $item, $res)
-	{
-		if ($item == null) return $res;
-		if ($item["type"] == 1) $res["search_name"] = $item["name"] . " " . $item["surname"];
-		if ($item["type"] == 2) $res["search_name"] = $item["company_name"];
-		$res["search_name"] = trim($res["search_name"]);
-		return $res;
-	}
-	
-	
-	
-	/**
-	 * Struct builder
-	 */
-	public static function elberos_struct_builder($struct)
-	{
-		if ($struct->form_name == "elberos_user")
-		{
-			$struct
-				
-				->addField
-				([
-					"api_name" => "type",
-					"type" => "select",
-					"label" => "Тип клиента",
-					"default" => 1,
-					"options" =>
-					[
-						["id"=>1, "value"=>"Физ лицо"],
-						["id"=>2, "value"=>"Юр лицо"],
-					],
-				])
-				
-				->addField
-				([
-					"api_name" => "name",
-					"label" => "Имя",
-					"type" => "input",
-					"php_style" => [static::class, "php_style_name"],
-					"js_change" => [static::class, "js_change_name"],
-				])
-				
-				->addField
-				([
-					"api_name" => "surname",
-					"label" => "Фамилия",
-					"type" => "input",
-					"php_style" => [static::class, "php_style_surname"],
-					"js_change" => [static::class, "js_change_surname"],
-				])
-				
-				->addField
-				([
-					"api_name" => "company_name",
-					"label" => "Название компании",
-					"type" => "input",
-					"php_style" => [static::class, "php_style_company_name"],
-					"js_change" => [static::class, "js_change_company_name"],
-				])
-				
-				->addField
-				([
-					"api_name" => "search_name",
-					"show" => false,
-					"process_item" => [static::class, "process_item_search_name"],
-				])
-				
-				->addField
-				([
-					"api_name" => "email",
-					"label" => "E-mail",
-					"type" => "input",
-				])
-				
-				->addField
-				([
-					"api_name" => "phone",
-					"label" => "Телефон",
-					"type" => "input",
-				])
-			;
-		}
 		
 		/* Register user */
-		if ($struct->form_name == "elberos_user" and $struct->action == "register")
+		if ($this->action == "register")
 		{
-			$struct
+			$this
 				->addField
 				([
 					"api_name" => "password1",
@@ -244,17 +116,131 @@ class User
 					"type" => "password",
 					"virtual" => true,
 				])
+				->addField
+				([
+					"api_name" => "captcha",
+					"label" => "Введите код, указанный на картинке",
+					"type" => "captcha",
+					"virtual" => true,
+				])
+				->setFormFields([
+					"name",
+					"surname",
+					"company_name",
+					"email",
+					"phone",
+					"password1",
+					"password2",
+					"captcha",
+				])
 			;
 		}
 		
 		/* Profile user */
-		if ($struct->form_name == "elberos_user" and $struct->action == "profile")
+		if ($this->action == "profile")
 		{
-			$struct->removeShowField("email");
+			$this
+				->setFormFields([
+					"name",
+					"surname",
+					"company_name",
+					"phone",
+					"password1",
+					"password2",
+				])
+			;
 		}
 		
-		return $struct;
+		return $this;
 	}
+	
+	
+	
+	/**
+	 * Process item field
+	 */
+	public function processItemField($field, $item, $res)
+	{
+		if ($field["api_name"] == "search_name")
+		{
+			if ($item == null) return $res;
+			if ($item["type"] == 1) $res["search_name"] = $item["name"] . " " . $item["surname"];
+			if ($item["type"] == 2) $res["search_name"] = $item["company_name"];
+			$res["search_name"] = trim($res["search_name"]);
+			return $res;
+		}
+		return $res;
+	}
+	
+	
+	
+	/**
+	 * PHP Style
+	 */
+	public function phpFormStyleField($field, $item)
+	{
+		$type = $this->getValue($item, "type");
+		if (in_array($field["api_name"], ["name", "surname"]))
+		{
+			return
+			[
+				"row" =>
+				[
+					"display" => ($type == 1) ? "block" : "none",
+				],
+			];
+		}
+		if ($field["api_name"] == "company_name")
+		{
+			return
+			[
+				"row" =>
+				[
+					"display" => ($type == 2) ? "block" : "none",
+				],
+			];
+		}
+		return [];
+	}
+	
+	
+	
+	/**
+	 * JS script
+	 */
+	public function jsFormChange($field, $item)
+	{
+		if ($field["api_name"] == "name")
+		{
+			return
+				'var value = $form.find("select[data-name=type]").val();' . "\n" .
+				'if (value == 1) jQuery(".web_form__row[data-name=name]").show();' . "\n" .
+				'else jQuery(".web_form__row[data-name=name]").hide();'
+			;
+		}
+		
+		if ($field["api_name"] == "surname")
+		{
+			return
+				'var value = $form.find("select[data-name=type]").val();' . "\n" .
+				'if (value == 1) jQuery(".web_form__row[data-name=surname]").show();' . "\n" .
+				'else jQuery(".web_form__row[data-name=surname]").hide();'
+			;
+		}
+		
+		if ($field["api_name"] == "company_name")
+		{
+			return
+				'var value = $form.find("select[data-name=type]").val();' . "\n" .
+				'if (value == 2) jQuery(".web_form__row[data-name=company_name]").show();' . "\n" .
+				'else jQuery(".web_form__row[data-name=company_name]").hide();'
+			;
+		}
+		
+		return "";
+	}
+	
+	
 }
 
 }
