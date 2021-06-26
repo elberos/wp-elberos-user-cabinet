@@ -88,7 +88,7 @@ class Clients_Table extends \WP_List_Table
 		$columns = array(
 			'cb' => '<input type="checkbox" />', 
 			'type' => __('Тип клиента', 'elberos-user-cabinet'),
-			'search_name' => __('Имя', 'elberos-user-cabinet'),
+			'name' => __('Имя', 'elberos-user-cabinet'),
 			'email' => __('Email', 'elberos-user-cabinet'),
 			'phone' => __('Телефон', 'elberos-user-cabinet'),
 			'gmtime_add' => __('Дата регистрации', 'elberos-user-cabinet'),

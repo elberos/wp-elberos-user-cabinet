@@ -80,7 +80,8 @@ class User extends \Elberos\StructBuilder
 			->addField
 			([
 				"api_name" => "search_name",
-				"show" => false,
+				"label" => "Имя",
+				"form_show" => false,
 			])
 			
 			->addField
@@ -127,6 +128,7 @@ class User extends \Elberos\StructBuilder
 					"name",
 					"surname",
 					"company_name",
+					"search_name",
 					"email",
 					"phone",
 					"password1",
@@ -144,6 +146,7 @@ class User extends \Elberos\StructBuilder
 					"name",
 					"surname",
 					"company_name",
+					"search_name",
 					"phone",
 					"password1",
 					"password2",

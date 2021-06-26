@@ -49,7 +49,8 @@ class Elberos_User_Cabinet_Plugin
 			'admin_init', 
 			function()
 			{
-				require_once __DIR__ . "/include/admin-clients.php";
+				require_once __DIR__ . "/include/Clients_Table.php";
+				//require_once __DIR__ . "/include/admin-clients.php";
 			}
 		);
 		add_action('admin_menu', 'Elberos_User_Cabinet_Plugin::register_admin_menu');
@@ -95,7 +96,8 @@ class Elberos_User_Cabinet_Plugin
 			'manage_options', 'elberos-user-cabinet',
 			function ()
 			{
-				\Elberos\UserCabinet\Clients::show();
+				$table = new \Elberos\UserCabinet\Clients_Table();
+				$table->display();
 			},
 			null,
 			35
