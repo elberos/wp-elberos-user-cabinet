@@ -55,6 +55,7 @@ onJQueryLoaded(function(){
 		(
 			"elberos_cabinet",
 			"register",
+			send_data,
 			(function($form){
 				return function(res)
 				{
@@ -64,8 +65,7 @@ onJQueryLoaded(function(){
 						document.location = "/cabinet/login/?from=register";
 					}
 				}
-			})($form),
-			send_data,
+			})($form)
 		);
 	});
 	

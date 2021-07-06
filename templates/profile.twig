@@ -35,13 +35,13 @@ onJQueryLoaded(function(){
 		(
 			"elberos_cabinet",
 			"update_profile",
+			send_data,
 			(function($form){
 				return function(res)
 				{
 					ElberosFormSetResponse($form, res);
 				}
 			})($form),
-			send_data,
 		);
 		
 	});

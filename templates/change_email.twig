@@ -45,13 +45,13 @@ onJQueryLoaded(function(){
 		(
 			"elberos_cabinet",
 			"change_email",
+			send_data,
 			(function($form){
 				return function(res)
 				{
 					ElberosFormSetResponse($form, res);
 				}
 			})($form),
-			send_data,
 		);
 		
 	});

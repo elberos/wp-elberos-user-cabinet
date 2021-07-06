@@ -60,10 +60,6 @@ class Api
 	{
 		global $wpdb;
 		
-		/* Get login */
-		$email = sanitize_user(isset($_POST["email"]) ? $_POST["email"] : "");
-		$name = isset($_POST["name"]) ? $_POST["name"] : "";
-		
 		/* Captcha check */
 		$captcha = isset($_POST["captcha"]) ? $_POST["captcha"] : "";
 		if (!\Elberos\captcha_validation($captcha))
@@ -72,23 +68,6 @@ class Api
 			[
 				"message" => "Неверный код с картинки.<br/>Попробуйте обновить картинку, кликнув по ней, и ввести код заново",
 				"code" => -100,
-			];
-		}
-		
-		if ($email == "")
-		{
-			return
-			[
-				"message" => "Укажите email",
-				"code" => -1,
-			];
-		}
-		if ($name == "")
-		{
-			return
-			[
-				"message" => "Укажите имя",
-				"code" => -1,
 			];
 		}
 		
@@ -108,6 +87,46 @@ class Api
 			return
 			[
 				"message" => "Пароли не совпадают",
+				"code" => -1,
+			];
+		}
+		
+		/* Register user */
+		$res = static::user_register($_POST, $password1);
+		
+		return
+		[
+			"message" => $res["message"],
+			"fields" => [],
+			"code" => $res["code"],
+		];
+	}
+	
+	
+	
+	/**
+	 * Register form
+	 */
+	public static function user_register($user_data, $password = null)
+	{
+		global $wpdb;
+		
+		/* Get login */
+		$email = sanitize_user(isset($user_data["email"]) ? $user_data["email"] : "");
+		$name = isset($user_data["name"]) ? $user_data["name"] : "";
+		if ($email == "")
+		{
+			return
+			[
+				"message" => "Укажите email",
+				"code" => -1,
+			];
+		}
+		if ($name == "")
+		{
+			return
+			[
+				"message" => "Укажите имя",
 				"code" => -1,
 			];
 		}
@@ -142,13 +161,16 @@ class Api
 		/* Process item */
 		$user_fields = \Elberos\UserCabinet\User::create("register");
 		$item = $user_fields->getDefault();
-		$item = $user_fields->update($item, $_POST);
+		$item = $user_fields->update($item, $user_data);
 		$item = $user_fields->processItem($item);
 		
 		/* Set password */
-		$password_hash = password_hash($password1, PASSWORD_BCRYPT, ['cost'=>11]);
-		$item['password'] = $password_hash;
-		$item['gmtime_add'] = \Elberos\dbtime();
+		if ($password)
+		{
+			$password_hash = password_hash($password, PASSWORD_BCRYPT, ['cost'=>11]);
+			$item['password'] = $password_hash;
+			$item['gmtime_add'] = \Elberos\dbtime();
+		}
 		
 		/* Apply action */
 		$item = apply_filters("elberos_user_register_before", $item);
@@ -162,8 +184,8 @@ class Api
 		return
 		[
 			"message" => "Ok",
-			"fields" => [],
 			"code" => 1,
+			"item" => $item,
 		];
 	}
 	
