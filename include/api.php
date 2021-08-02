@@ -177,6 +177,7 @@ class Api
 		
 		/* Insert item */
 		$wpdb->insert($table_clients, $item);
+		$item["id"] = $wpdb->insert_id;
 		
 		/* Apply action */
 		do_action("elberos_user_register_after", $item);

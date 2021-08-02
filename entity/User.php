@@ -72,6 +72,13 @@ class User extends \Elberos\StructBuilder
 			
 			->addField
 			([
+				"api_name" => "lastname",
+				"label" => "Отчество",
+				"type" => "input",
+			])
+			
+			->addField
+			([
 				"api_name" => "company_name",
 				"label" => "Название компании",
 				"type" => "input",
