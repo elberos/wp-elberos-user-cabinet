@@ -104,7 +104,7 @@ class Clients_Table extends \Elberos\Table
 		return sprintf
 		(
 			'<a href="?page=' . $page_name . '&action=edit&id=%s">%s</a>',
-			$item['id'], 
+			$this->item['id'], 
 			__('Открыть', 'elberos-core')
 		);
 	}
@@ -321,9 +321,9 @@ class Clients_Table extends \Elberos\Table
 	/**
 	 * Display form
 	 */
-	function display_form($item)
+	function display_form()
 	{
-		parent::display_form($item);
+		parent::display_form();
 		
 		?>
 		<h2 style='padding-left: 0;'>Смена пароля</h2>
@@ -346,9 +346,9 @@ class Clients_Table extends \Elberos\Table
 	/**
 	 * Display form buttons
 	 */
-	function display_form_buttons($item)
+	function display_form_buttons()
 	{
-		parent::display_form_buttons($item);
+		parent::display_form_buttons();
 	}
 	
 }
