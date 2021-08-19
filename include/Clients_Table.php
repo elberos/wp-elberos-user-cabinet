@@ -104,7 +104,7 @@ class Clients_Table extends \Elberos\Table
 		return sprintf
 		(
 			'<a href="?page=' . $page_name . '&action=edit&id=%s">%s</a>',
-			$this->item['id'], 
+			$item['id'], 
 			__('Открыть', 'elberos-core')
 		);
 	}
