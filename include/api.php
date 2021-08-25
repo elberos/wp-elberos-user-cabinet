@@ -175,6 +175,12 @@ class Api
 		/* Apply action */
 		$item = apply_filters("elberos_user_register_before", $item);
 		
+		/* Code 1C */
+		if (!isset($item['code_1c']))
+		{
+			$item['code_1c'] = \Elberos\uid();
+		}
+		
 		/* Insert item */
 		$wpdb->insert($table_clients, $item);
 		$item["id"] = $wpdb->insert_id;
