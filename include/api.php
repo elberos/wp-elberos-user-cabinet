@@ -27,12 +27,18 @@ if ( !class_exists( Api::class ) )
 class Api
 {
 	
+	static $ENABLE_CAPTCHA = true;
+	
+	
+	
 	/**
 	 * Init api
 	 */
 	public static function init()
 	{
 		add_action('elberos_register_routes', '\\Elberos\\UserCabinet\\Api::register_routes');
+		add_action('elberos_user_register_validation', 
+			'\\Elberos\\UserCabinet\\Api::elberos_user_register_validation_email');
 	}
 	
 	
@@ -61,14 +67,17 @@ class Api
 		global $wpdb;
 		
 		/* Captcha check */
-		$captcha = isset($_POST["captcha"]) ? $_POST["captcha"] : "";
-		if (!\Elberos\captcha_validation($captcha))
+		if (static::$ENABLE_CAPTCHA)
 		{
-			return
-			[
-				"message" => "Неверный код с картинки.<br/>Попробуйте обновить картинку, кликнув по ней, и ввести код заново",
-				"code" => -100,
-			];
+			$captcha = isset($_POST["captcha"]) ? $_POST["captcha"] : "";
+			if (!\Elberos\captcha_validation($captcha))
+			{
+				return
+				[
+					"message" => "Неверный код с картинки.<br/>Попробуйте обновить картинку, кликнув по ней, и ввести код заново",
+					"code" => -100,
+				];
+			}
 		}
 		
 		/* Check password */
@@ -112,21 +121,13 @@ class Api
 		global $wpdb;
 		
 		/* Get login */
-		$email = sanitize_user(isset($user_data["email"]) ? $user_data["email"] : "");
+		$email = sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : ""));
 		$name = isset($user_data["name"]) ? $user_data["name"] : "";
 		if ($email == "")
 		{
 			return
 			[
 				"message" => "Укажите email",
-				"code" => -1,
-			];
-		}
-		if ($name == "")
-		{
-			return
-			[
-				"message" => "Укажите имя",
 				"code" => -1,
 			];
 		}
@@ -164,6 +165,10 @@ class Api
 		$item = $user_fields->update($item, $user_data);
 		$item = $user_fields->processItem($item);
 		
+		/* Set user type = 1 as default */
+		if ($item["type"] == 0) $item["type"] = 1;
+		$item["email"] = trim($item["email"]);
+		
 		/* Set password */
 		if ($password)
 		{
@@ -194,6 +199,25 @@ class Api
 			"code" => 1,
 			"item" => $item,
 		];
+	}
+	
+	
+	
+	/**
+	 * User validation
+	 */
+	public static function elberos_user_register_validation_email()
+	{
+		$email = sanitize_user(trim(isset($_POST["email"]) ? $_POST["email"] : ""));
+		if ($email == "")
+		{
+			return "Укажите email";
+		}
+		if ($email == "" || !filter_var($email, FILTER_VALIDATE_EMAIL))
+		{
+			return "E-mail не верен";
+		}
+		return "";
 	}
 	
 	

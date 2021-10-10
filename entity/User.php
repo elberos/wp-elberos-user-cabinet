@@ -21,7 +21,7 @@
 
 namespace Elberos\UserCabinet;
 
-if ( !class_exists( User::class ) ) 
+if ( !class_exists( User::class ) && class_exists( \Elberos\StructBuilder::class ) ) 
 {
 
 class User extends \Elberos\StructBuilder
@@ -155,8 +155,6 @@ class User extends \Elberos\StructBuilder
 					"company_name",
 					"search_name",
 					"phone",
-					"password1",
-					"password2",
 				])
 			;
 		}
@@ -224,8 +222,8 @@ class User extends \Elberos\StructBuilder
 		{
 			return
 				'var value = $form.find("select[data-name=type]").val();' . "\n" .
-				'if (value == 1) jQuery(".web_form__row[data-name=name]").show();' . "\n" .
-				'else jQuery(".web_form__row[data-name=name]").hide();'
+				'if (value == 1) jQuery(".web_form_row[data-name=name]").show();' . "\n" .
+				'else jQuery(".web_form_row[data-name=name]").hide();'
 			;
 		}
 		
@@ -233,8 +231,8 @@ class User extends \Elberos\StructBuilder
 		{
 			return
 				'var value = $form.find("select[data-name=type]").val();' . "\n" .
-				'if (value == 1) jQuery(".web_form__row[data-name=surname]").show();' . "\n" .
-				'else jQuery(".web_form__row[data-name=surname]").hide();'
+				'if (value == 1) jQuery(".web_form_row[data-name=surname]").show();' . "\n" .
+				'else jQuery(".web_form_row[data-name=surname]").hide();'
 			;
 		}
 		
@@ -242,8 +240,8 @@ class User extends \Elberos\StructBuilder
 		{
 			return
 				'var value = $form.find("select[data-name=type]").val();' . "\n" .
-				'if (value == 2) jQuery(".web_form__row[data-name=company_name]").show();' . "\n" .
-				'else jQuery(".web_form__row[data-name=company_name]").hide();'
+				'if (value == 2) jQuery(".web_form_row[data-name=company_name]").show();' . "\n" .
+				'else jQuery(".web_form_row[data-name=company_name]").hide();'
 			;
 		}
 		

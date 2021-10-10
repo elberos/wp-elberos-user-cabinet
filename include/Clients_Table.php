@@ -21,6 +21,8 @@
 
 namespace Elberos\UserCabinet;
 
+if ( !class_exists( Clients_Table::class ) && class_exists( \Elberos\Table::class ) ) 
+{
 
 class Clients_Table extends \Elberos\Table 
 {
@@ -351,4 +353,6 @@ class Clients_Table extends \Elberos\Table
 		parent::display_form_buttons();
 	}
 	
+}
+
 }

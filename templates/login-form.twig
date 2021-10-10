@@ -51,8 +51,8 @@ onJQueryLoaded(function(){
 		var $form = $('form.web_form_login');
 		
 		/* Result */
-		$form.find('.web_form_result').html('Ожидайте идёт отправка запроса');
 		ElberosFormClearResult( $form );
+		ElberosFormSetWaitMessage( $form );
 		
 		/* Get data */
 		var send_data = ElberosFormGetData($form);
