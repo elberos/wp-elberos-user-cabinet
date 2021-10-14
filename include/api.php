@@ -102,11 +102,12 @@ class Api
 		
 		/* Register user */
 		$res = static::user_register($_POST, $password1);
+		$validation = isset($res["validation"]) ? $res["validation"] : null;
 		
 		return
 		[
 			"message" => $res["message"],
-			"fields" => [],
+			"fields" => ($validation && isset($validation["fields"])) ? $validation["fields"] : [],
 			"code" => $res["code"],
 		];
 	}
@@ -120,28 +121,31 @@ class Api
 	{
 		global $wpdb;
 		
-		/* Get login */
-		$email = sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : ""));
-		$name = isset($user_data["name"]) ? $user_data["name"] : "";
-		if ($email == "")
+		/* Validation */
+		$params = apply_filters
+		(
+			"elberos_user_register_validation",
+			[
+				"code" => -1,
+				"user_data" => $user_data,
+				"validation" => [],
+			]
+		);
+		$validation = $params["validation"];
+		if ($validation != null && count($validation) > 0)
 		{
+			$validation_error = isset($params["validation"]["error"]) ? $params["validation"]["error"] :
+				__("Ошибка. Проверьте корректность данных", "elberos");
 			return
 			[
-				"message" => "Укажите email",
-				"code" => -1,
+				"message" => $validation_error,
+				"validation" => $validation,
+				"code" => -2,
 			];
 		}
 		
-		/* Validation */
-		$message = apply_filters("elberos_user_register_validation", "");
-		if ($message != "")
-		{
-			return
-			[
-				"message" => $message,
-				"code" => -1,
-			];
-		}
+		/* Get login */
+		$email = sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : ""));
 		
 		/* Find user */
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
@@ -206,18 +210,17 @@ class Api
 	/**
 	 * User validation
 	 */
-	public static function elberos_user_register_validation_email()
+	public static function elberos_user_register_validation_email($params)
 	{
-		$email = sanitize_user(trim(isset($_POST["email"]) ? $_POST["email"] : ""));
-		if ($email == "")
-		{
-			return "Укажите email";
-		}
+		$user_data = isset($params["user_data"]) ? $params["user_data"] : [];
+		$email = sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : ""));
 		if ($email == "" || !filter_var($email, FILTER_VALIDATE_EMAIL))
 		{
-			return "E-mail не верен";
+			$params["code"] = -2;
+			$params["validation"]["error"] = __("Ошибка. Проверьте корректность данных", "elberos");
+			$params["validation"]["fields"]["email"][] = "E-mail не верен";
 		}
-		return "";
+		return $params;
 	}
 	
 	

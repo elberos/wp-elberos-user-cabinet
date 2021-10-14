@@ -63,7 +63,18 @@ onJQueryLoaded(function(){
 					ElberosFormSetResponse($form, res);
 					if (res.code == 1)
 					{
-						document.location = "/cabinet/login/?from=register";
+						/* Send metrika event */
+						sendSiteEvent('metrika_event', 'site_register');
+						
+						/* Set timeout */
+						setTimeout
+						(
+							function()
+							{
+								document.location = "/cabinet/login/?from=register";
+							},
+							500
+						);
 					}
 				}
 			})($form)
