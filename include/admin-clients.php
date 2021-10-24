@@ -97,6 +97,12 @@ class Clients_Table extends \WP_List_Table
 		return $columns;
 	}
 	
+	// Дата создания
+	function column_gmtime_add($item)
+	{
+		return \Elberos\wp_from_gmtime( $item["gmtime_add"] );
+	}
+	
 	// Сортируемые колонки
 	function get_sortable_columns()
 	{

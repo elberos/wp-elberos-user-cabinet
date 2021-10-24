@@ -96,6 +96,25 @@ class Clients_Table extends \Elberos\Table
 	
 	
 	/**
+	 * Returns columns
+	 */
+	function get_columns()
+	{
+		$columns = parent::get_columns();
+		$columns["gmtime_add"] = __('Дата регистрации', 'elberos-user-cabinet');
+		$buttons = $columns["buttons"]; unset($columns["buttons"]); $columns["buttons"] = $buttons;
+		return $columns;
+	}
+	
+	
+	// Дата создания
+	function column_gmtime_add($item)
+	{
+		return \Elberos\wp_from_gmtime( $item["gmtime_add"] );
+	}
+	
+	
+	/**
 	 * Column buttons
 	 */
 	function column_buttons($item)
@@ -225,35 +244,6 @@ class Clients_Table extends \Elberos\Table
 				);
 			}
 		}
-	}
-	
-	
-	
-	/**
-	 * Prepare table items
-	 */
-	function prepare_table_items()
-	{
-		$args = [];
-		$where = [];
-		if (isset($_GET['is_deleted']) && $_GET['is_deleted']) $where[] = "is_deleted=1";
-		else $where[] = "is_deleted=0";
-		
-		$per_page = $this->per_page();
-		list($items, $total_items, $pages, $page) = \Elberos\wpdb_query
-		([
-			"table_name" => $this->get_table_name(),
-			"where" => implode(" and ", $where),
-			"args" => $args,
-			"per_page" => $per_page,
-		]);
-		
-		$this->items = $items;
-		$this->set_pagination_args(array(
-			'total_items' => $total_items, 
-			'per_page' => $per_page,
-			'total_pages' => ceil($total_items / $per_page) 
-		));
 	}
 	
 	
