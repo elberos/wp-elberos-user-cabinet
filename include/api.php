@@ -112,7 +112,7 @@ class Api
 		global $wpdb;
 		
 		/* Get login */
-		$email = sanitize_user(isset($user_data["email"]) ? $user_data["email"] : "");
+		$email = mb_strtolower(sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : "")));
 		$name = isset($user_data["name"]) ? $user_data["name"] : "";
 		if ($email == "")
 		{
@@ -159,6 +159,7 @@ class Api
 		}
 		
 		/* Process item */
+		$user_data["email"] = $email;
 		$user_fields = \Elberos\UserCabinet\User::create("register");
 		$item = $user_fields->getDefault();
 		$item = $user_fields->update($item, $user_data);
@@ -210,7 +211,7 @@ class Api
 			];
 		}
 		
-		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		$login = mb_strtolower(sanitize_user(isset($_POST["login"]) ? $_POST["login"] : ""));
 		$password = isset($_POST["password"]) ? $_POST["password"] : "";
 		
 		/* Check password */
@@ -313,7 +314,7 @@ class Api
 		global $wpdb;
 		
 		/* Get login */
-		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		$login = mb_strtolower(sanitize_user(isset($_POST["login"]) ? $_POST["login"] : ""));
 		
 		/* Find user */
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
@@ -392,7 +393,7 @@ class Api
 		global $wpdb;
 		
 		/* Get login */
-		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
+		$login = mb_strtolower(sanitize_user(isset($_POST["login"]) ? $_POST["login"] : ""));
 		$code = isset($_POST["code"]) ? $_POST["code"] : "";
 		$password1 = isset($_POST["password1"]) ? $_POST["password1"] : "";
 		$password2 = isset($_POST["password2"]) ? $_POST["password2"] : "";
@@ -614,7 +615,7 @@ class Api
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		
 		/* Check if email exists */
-		$email = sanitize_user(isset($_POST['email']) ? $_POST['email'] : "");
+		$email = mb_strtolower(sanitize_user(trim(isset($_POST['email']) ? $_POST['email'] : "")));
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s and id != %d", $email, $current_user['id']
