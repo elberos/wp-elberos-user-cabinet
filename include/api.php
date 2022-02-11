@@ -27,7 +27,7 @@ if ( !class_exists( Api::class ) )
 class Api
 {
 	
-	static $ENABLE_CAPTCHA = true;
+	static $ENABLE_CAPTCHA = false;
 	
 	
 	
@@ -117,7 +117,7 @@ class Api
 	/**
 	 * Register form
 	 */
-	public static function user_register($user_data, $password = null)
+	public static function user_register($form_data, $password = null)
 	{
 		global $wpdb;
 		
@@ -127,7 +127,7 @@ class Api
 			"elberos_user_register_validation",
 			[
 				"code" => -1,
-				"user_data" => $user_data,
+				"form_data" => $form_data,
 				"validation" => [],
 			]
 		);
@@ -145,7 +145,7 @@ class Api
 		}
 		
 		/* Get login */
-		$email = sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : ""));
+		$email = sanitize_user(trim(isset($form_data["email"]) ? $form_data["email"] : ""));
 		
 		/* Find user */
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
@@ -166,7 +166,7 @@ class Api
 		/* Process item */
 		$user_fields = \Elberos\UserCabinet\User::create("register");
 		$item = $user_fields->getDefault();
-		$item = $user_fields->update($item, $user_data);
+		$item = $user_fields->update($item, $form_data);
 		$item = $user_fields->processItem($item);
 		
 		/* Set user type = 1 as default */
@@ -212,8 +212,8 @@ class Api
 	 */
 	public static function elberos_user_register_validation_email($params)
 	{
-		$user_data = isset($params["user_data"]) ? $params["user_data"] : [];
-		$email = sanitize_user(trim(isset($user_data["email"]) ? $user_data["email"] : ""));
+		$form_data = isset($params["form_data"]) ? $params["form_data"] : [];
+		$email = sanitize_user(trim(isset($form_data["email"]) ? $form_data["email"] : ""));
 		if ($email == "" || !filter_var($email, FILTER_VALIDATE_EMAIL))
 		{
 			$params["code"] = -2;
@@ -566,11 +566,11 @@ class Api
 		$current_password = isset($_POST['current_password']) ? $_POST['current_password'] : "";
 		$new_password1 = isset($_POST['new_password1']) ? $_POST['new_password1'] : "";
 		$new_password2 = isset($_POST['new_password2']) ? $_POST['new_password2'] : "";
-		if (!password_verify($current_password, $current_password_hash))
+		if ($new_password1 == "")
 		{
 			return
 			[
-				"message" => "Неверный текущий пароль",
+				"message" => "Новый пароль пустой",
 				"code" => -1,
 			];
 		}
@@ -579,6 +579,14 @@ class Api
 			return
 			[
 				"message" => "Пароли не совпадают",
+				"code" => -1,
+			];
+		}
+		if (!password_verify($current_password, $current_password_hash))
+		{
+			return
+			[
+				"message" => "Неверный текущий пароль",
 				"code" => -1,
 			];
 		}
@@ -644,10 +652,19 @@ class Api
 			];
 		}
 		
+		$email = sanitize_user(trim(isset($_POST["new_email"]) ? $_POST["new_email"] : ""));
+		if ($email == "" || !filter_var($email, FILTER_VALIDATE_EMAIL))
+		{
+			return
+			[
+				"message" => "Неверный email",
+				"code" => -1,
+			];
+		}
+		
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		
 		/* Check if email exists */
-		$email = sanitize_user(isset($_POST['email']) ? $_POST['email'] : "");
 		$sql = $wpdb->prepare
 		(
 			"SELECT * FROM $table_clients WHERE email = %s and id != %d", $email, $current_user['id']

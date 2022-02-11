@@ -132,6 +132,7 @@ class User extends \Elberos\StructBuilder
 					"virtual" => true,
 				])
 				->setFormFields([
+					"type",
 					"name",
 					"surname",
 					"company_name",
@@ -150,6 +151,7 @@ class User extends \Elberos\StructBuilder
 		{
 			$this
 				->setFormFields([
+					"type",
 					"name",
 					"surname",
 					"company_name",
