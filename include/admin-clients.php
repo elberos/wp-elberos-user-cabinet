@@ -22,6 +22,10 @@
 namespace Elberos\UserCabinet;
 
 
+/* Check if Wordpress */
+if (!defined('ABSPATH')) exit;
+
+
 if ( !class_exists( Clients::class ) ) 
 {
 

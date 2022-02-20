@@ -21,13 +21,18 @@
 
 namespace Elberos\UserCabinet;
 
+
+/* Check if Wordpress */
+if (!defined('ABSPATH')) exit;
+
+
 if ( !class_exists( Api::class ) ) 
 {
 
 class Api
 {
 	
-	static $ENABLE_CAPTCHA = false;
+	static $ENABLE_CAPTCHA = true;
 	
 	
 	
@@ -194,6 +199,12 @@ class Api
 		$wpdb->insert($table_clients, $item);
 		$item["id"] = $wpdb->insert_id;
 		
+		/* Flush captcha */
+		if (static::$ENABLE_CAPTCHA)
+		{
+			\Elberos\flush_captcha();
+		}
+		
 		/* Apply action */
 		do_action("elberos_user_register_after", $item);
 		
@@ -345,6 +356,20 @@ class Api
 	{
 		global $wpdb;
 		
+		/* Captcha check */
+		if (static::$ENABLE_CAPTCHA)
+		{
+			$captcha = isset($_POST["captcha"]) ? $_POST["captcha"] : "";
+			if (!\Elberos\captcha_validation($captcha))
+			{
+				return
+				[
+					"message" => "Неверный код с картинки.<br/>Попробуйте обновить картинку, кликнув по ней, и ввести код заново",
+					"code" => -100,
+				];
+			}
+		}
+		
 		/* Get login */
 		$login = sanitize_user(isset($_POST["login"]) ? $_POST["login"] : "");
 		
@@ -381,6 +406,12 @@ class Api
 		/* Set recovery code */
 		$client["recovery_password_code"] = $recovery_code;
 		
+		/* Flush captcha */
+		if (static::$ENABLE_CAPTCHA)
+		{
+			\Elberos\flush_captcha();
+		}
+		
 		/* Apply action */
 		do_action("elberos_user_recovery_password1_after", $client);
 		
@@ -396,7 +427,7 @@ class Api
 	/**
 	 * Send email
 	 */
-	public static function recovery_password1_send_email($client)
+	public static function recovery_password1_send_email_old($client)
 	{
 		$recover_link = site_url("/cabinet/recovery_password2/?recovery_password_code=" .
 			htmlspecialchars($client['recovery_password_code']) . "&login=" .
