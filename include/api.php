@@ -133,6 +133,7 @@ class Api
 			[
 				"code" => -1,
 				"form_data" => $form_data,
+				"password" => $password,
 				"validation" => [],
 			]
 		);
@@ -187,7 +188,8 @@ class Api
 		}
 		
 		/* Apply action */
-		$item = apply_filters("elberos_user_register_before", $item);
+		$res = apply_filters("elberos_user_register_before", ["user"=>$item, "password"=>$password]);
+		$item = $res["user"];
 		
 		/* Code 1C */
 		if (!isset($item['code_1c']))
@@ -206,7 +208,7 @@ class Api
 		}
 		
 		/* Apply action */
-		do_action("elberos_user_register_after", $item);
+		do_action("elberos_user_register_after", ["user"=>$item, "password"=>$password]);
 		
 		return
 		[
