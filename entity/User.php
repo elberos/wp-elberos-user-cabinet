@@ -116,6 +116,13 @@ class User extends \Elberos\StructBuilder
 				"label" => "Телефон",
 				"type" => "input",
 			])
+			
+			->addField
+			([
+				"api_name" => "gmtime_add",
+				"label" => "Дата регистрации",
+				"type" => "input",
+			])
 		;
 		
 		/* Register user */

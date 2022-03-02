@@ -119,6 +119,18 @@ class Clients_Table extends \Elberos\Table
 	
 	
 	/**
+	 * Search name
+	 */
+	function column_search_name($item)
+	{
+		if ($item["type"] == 1) return $item["name"] . " " . $item["surname"];
+		if ($item["type"] == 2) return $item["company_name"];
+		return "";
+	}
+	
+	
+	
+	/**
 	 * Действия
 	 */
 	function get_bulk_actions()
@@ -237,30 +249,112 @@ class Clients_Table extends \Elberos\Table
 	
 	
 	/**
-	 * Prepare table items
+	 * Returns true if show filter
 	 */
-	function prepare_table_items()
+	function is_show_filter()
 	{
-		$args = [];
-		$where = [];
-		if (isset($_GET['is_deleted']) && $_GET['is_deleted']) $where[] = "is_deleted=1";
-		else $where[] = "is_deleted=0";
+		return true;
+	}
+	
+	
+	
+	/**
+	 * Returns filter elements
+	 */
+	function get_filter()
+	{
+		return [
+			"client_id",
+			"type",
+			"email",
+			"phone",
+		];
+	}
+	
+	
+	
+	/**
+	 * Show filter item
+	 */
+	function show_filter_item($item_name)
+	{
+		if ($item_name == "type")
+		{
+			?>
+			<select name="type" class="web_form_value">
+				<option value="">Тип клиента</option>
+				<option value="1" <?= \Elberos\is_get_selected("type", "1") ?>>Физ лицо</option>
+				<option value="2" <?= \Elberos\is_get_selected("type", "2") ?>>Юр лицо</option>
+			</select>
+			<?php
+		}
+		else if ($item_name == "email")
+		{
+			?>
+			<input type="text" name="email" class="web_form_value" placeholder="E-mail"
+				value="<?= esc_html(isset($_GET["email"]) ? $_GET["email"] : "") ?>" />
+			<?php
+		}
+		else if ($item_name == "client_id")
+		{
+			?>
+			<input type="text" name="client_id" class="web_form_value" placeholder="ID Клиента"
+				value="<?= esc_html(isset($_GET["client_id"]) ? $_GET["client_id"] : "") ?>" />
+			<?php
+		}
+		else if ($item_name == "phone")
+		{
+			?>
+			<input type="text" name="phone" class="web_form_value" placeholder="Телефон"
+				value="<?= esc_html(isset($_GET["phone"]) ? $_GET["phone"] : "") ?>" />
+			<?php
+		}
+		else
+		{
+			parent::show_filter_item($item_name);
+		}
+	}
+	
+	
+	
+	/**
+	 * Process items params
+	 */
+	function prepare_table_items_filter($params)
+	{
+		global $wpdb;
 		
-		$per_page = $this->per_page();
-		list($items, $total_items, $pages, $page) = \Elberos\wpdb_query
-		([
-			"table_name" => $this->get_table_name(),
-			"where" => implode(" and ", $where),
-			"args" => $args,
-			"per_page" => $per_page,
-		]);
+		$params = parent::prepare_table_items_filter($params);
 		
-		$this->items = $items;
-		$this->set_pagination_args(array(
-			'total_items' => $total_items, 
-			'per_page' => $per_page,
-			'total_pages' => ceil($total_items / $per_page) 
-		));
+		/* Type */
+		if (isset($_GET["type"]))
+		{
+			$params["where"][] = "type=:type";
+			$params["args"]["type"] = (int)$_GET["type"];
+		}
+		
+		/* ID Клиента */
+		if (isset($_GET["email"]))
+		{
+			$params["where"][] = "email like :email";
+			$params["args"]["email"] = "%" . $wpdb->esc_like(\Elberos\mb_trim($_GET["email"])) . "%";
+		}
+		
+		/* Email */
+		if (isset($_GET["client_id"]))
+		{
+			$params["where"][] = "id=:client_id";
+			$params["args"]["client_id"] = \Elberos\mb_trim($_GET["client_id"]);
+		}
+		
+		/* Phone */
+		if (isset($_GET["phone"]))
+		{
+			$params["where"][] = "phone like :phone";
+			$params["args"]["phone"] = "%" . $wpdb->esc_like(\Elberos\mb_trim($_GET["phone"])) . "%";
+		}
+		
+		return $params;
 	}
 	
 	
