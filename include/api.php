@@ -187,6 +187,9 @@ class Api
 			$item['gmtime_add'] = \Elberos\dbtime();
 		}
 		
+		/* gmtime add */
+		$item["gmtime_add"] = gmdate("Y-m-d H:i:s", time());
+		
 		/* Apply action */
 		$res = apply_filters("elberos_user_register_before", ["user"=>$item, "password"=>$password]);
 		$item = $res["user"];
