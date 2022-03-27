@@ -106,7 +106,8 @@ class Api
 		}
 		
 		/* Register user */
-		$res = static::user_register($_POST, $password1);
+		$form_data = stripslashes_deep($_POST);
+		$res = static::user_register($form_data, $password1);
 		$validation = isset($res["validation"]) ? $res["validation"] : null;
 		
 		return

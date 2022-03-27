@@ -122,6 +122,10 @@ class User extends \Elberos\StructBuilder
 				"api_name" => "gmtime_add",
 				"label" => "Дата регистрации",
 				"type" => "input",
+				"column_value" => function($struct, $item)
+				{
+					return \Elberos\wp_from_gmtime( $item["gmtime_add"] );
+				},
 			])
 		;
 		
