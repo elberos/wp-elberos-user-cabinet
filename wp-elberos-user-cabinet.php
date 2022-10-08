@@ -50,7 +50,6 @@ class Elberos_User_Cabinet_Plugin
 			function()
 			{
 				require_once __DIR__ . "/include/Clients_Table.php";
-				//require_once __DIR__ . "/include/admin-clients.php";
 			}
 		);
 		add_action('admin_menu', 'Elberos_User_Cabinet_Plugin::register_admin_menu');
@@ -59,13 +58,16 @@ class Elberos_User_Cabinet_Plugin
 		add_action('elberos_twig', 'Elberos_User_Cabinet_Plugin::elberos_twig', 100);
 		
 		/* User register */
-		add_action('elberos_user_recovery_password1_after', '\\Elberos\\UserCabinet\\Api::recovery_password1_send_email');
+		add_action('elberos_user_recovery_password1_after', 
+			'\\Elberos\\UserCabinet\\Api::recovery_password1_send_email');
 		
 		/* User cabinet menu */
-		add_filter('elberos_user_cabinet_menu', 'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu');
+		add_filter('elberos_user_cabinet_menu',
+			'Elberos_User_Cabinet_Plugin::elberos_user_cabinet_menu');
 		
 		/* Remove plugin updates */
-		add_filter('site_transient_update_plugins', 'Elberos_User_Cabinet_Plugin::filter_plugin_updates');
+		add_filter('site_transient_update_plugins',
+			'Elberos_User_Cabinet_Plugin::filter_plugin_updates');
 	}
 	
 	
@@ -143,7 +145,6 @@ class Elberos_User_Cabinet_Plugin
 					$res = \Elberos\UserCabinet\Api::api_logout($site);
 					$site->jwt = null;
 					$site->current_user = null;
-					//header('Location: ' . site_url("/"));
 					return null;
 				},
 			]
