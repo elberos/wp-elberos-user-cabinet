@@ -93,6 +93,16 @@ class Clients_Table extends \Elberos\Table
 	
 	
 	/**
+	 * Gmtime
+	 */
+	function column_gmtime_add($item)
+	{
+		return \Elberos\wp_from_gmtime($item['gmtime_add']);
+	}
+	
+	
+	
+	/**
 	 * Init struct
 	 */
 	function initStruct()
