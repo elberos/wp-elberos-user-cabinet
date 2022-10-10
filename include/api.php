@@ -53,13 +53,20 @@ class Api
 	 */
 	public static function register_routes($site)
 	{
-		$site->add_api("elberos_cabinet", "login", "\\Elberos\\UserCabinet\\Api::api_login");
-		$site->add_api("elberos_cabinet", "register", "\\Elberos\\UserCabinet\\Api::api_register");
-		$site->add_api("elberos_cabinet", "recovery_password1", "\\Elberos\\UserCabinet\\Api::api_recovery_password1");
-		$site->add_api("elberos_cabinet", "recovery_password2", "\\Elberos\\UserCabinet\\Api::api_recovery_password2");
-		$site->add_api("elberos_cabinet", "update_profile", "\\Elberos\\UserCabinet\\Api::api_update_profile");
-		$site->add_api("elberos_cabinet", "change_password", "\\Elberos\\UserCabinet\\Api::api_change_password");
-		$site->add_api("elberos_cabinet", "change_email", "\\Elberos\\UserCabinet\\Api::api_change_email");
+		$site->add_api("elberos_cabinet", "login",
+			"\\Elberos\\UserCabinet\\Api::api_login");
+		$site->add_api("elberos_cabinet", "register",
+			"\\Elberos\\UserCabinet\\Api::api_register");
+		$site->add_api("elberos_cabinet", "recovery_password1", 
+			"\\Elberos\\UserCabinet\\Api::api_recovery_password1");
+		$site->add_api("elberos_cabinet", "recovery_password2", 
+			"\\Elberos\\UserCabinet\\Api::api_recovery_password2");
+		$site->add_api("elberos_cabinet", "update_profile", 
+			"\\Elberos\\UserCabinet\\Api::api_update_profile");
+		$site->add_api("elberos_cabinet", "change_password", 
+			"\\Elberos\\UserCabinet\\Api::api_change_password");
+		$site->add_api("elberos_cabinet", "change_email", 
+			"\\Elberos\\UserCabinet\\Api::api_change_email");
 	}
 	
 	
@@ -141,7 +148,8 @@ class Api
 		$validation = $params["validation"];
 		if ($validation != null && count($validation) > 0)
 		{
-			$validation_error = isset($params["validation"]["error"]) ? $params["validation"]["error"] :
+			$validation_error = isset($params["validation"]["error"]) ?
+				$params["validation"]["error"] :
 				__("Ошибка. Проверьте корректность данных", "elberos");
 			return
 			[
@@ -523,6 +531,12 @@ class Api
 			]
 		);
 		
+		/* Apply action */
+		do_action("elberos_user_recovery_password2_after", [
+			"user" => $current_user,
+			"new_password" => $password1,
+		]);
+		
 		return
 		[
 			"message" => "Пароль был успешно изменен",
@@ -557,6 +571,31 @@ class Api
 			];
 		}
 		
+		/* Validation */
+		$params = apply_filters
+		(
+			"elberos_user_update_profile_validation",
+			[
+				"code" => -1,
+				"form_data" => $form_data,
+				"password" => $password,
+				"validation" => [],
+			]
+		);
+		$validation = $params["validation"];
+		if ($validation != null && count($validation) > 0)
+		{
+			$validation_error = isset($params["validation"]["error"]) ?
+				$params["validation"]["error"] :
+				__("Ошибка. Проверьте корректность данных", "elberos");
+			return
+			[
+				"message" => $validation_error,
+				"validation" => $validation,
+				"code" => -2,
+			];
+		}
+		
 		/* Process item */
 		$user_fields = \Elberos\UserCabinet\User::create("profile");
 		$item = $user_fields->update($current_user, $_POST);
@@ -565,6 +604,11 @@ class Api
 		/* Update user profile */
 		$table_clients = $wpdb->base_prefix . 'elberos_clients';
 		$result = $wpdb->update($table_clients, $item, ['id' => $current_user['id']]);
+		
+		/* Apply action */
+		do_action("elberos_user_update_profile_after", [
+			"user" => $current_user,
+		]);
 		
 		return
 		[
@@ -642,6 +686,12 @@ class Api
 				'id' => $current_user['id']
 			]
 		);
+		
+		/* Apply action */
+		do_action("elberos_user_change_password_after", [
+			"user" => $current_user,
+			"new_password" => $new_password1,
+		]);
 		
 		return
 		[
@@ -727,6 +777,12 @@ class Api
 				'id' => $current_user['id']
 			]
 		);
+		
+		/* Apply action */
+		do_action("elberos_user_change_email_after", [
+			"user" => $current_user,
+			"new_email" => $email,
+		]);
 		
 		return
 		[
