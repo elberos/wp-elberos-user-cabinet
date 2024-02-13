@@ -1,29 +1,30 @@
 {% extends "layout.twig" %}
 
-{% block page_container %}
+{% block site_container %}
 
 <div class='section page_login'>
 	<div class='section__wrap'>
 		
-		<div class='page_login__title'>
-			<h1>Регистрация</h1>
+		<div class='section_page_title'>
+			Регистрация
+			<div class='line'></div>
 		</div>
 		
-		<div class='page_login__wrap'>
+		<div class='page_login_wrap'>
 			
-			<form class='web_form web_form_login web_form_elberos_user'>
+			<form class='web_form web_form--style1 web_form_login web_form_elberos_user'>
 				
 				{{ user_fields.renderForm() | raw }}
 				{{ user_fields.renderJS() | raw }}
 				
 				<div class='web_form_buttons'>
-					<button type='button' class='button button--submit'>Регистрация</button>
+					<button type='button' class='button1 button--submit'>Регистрация</button>
 				</div>
 				
 				<div class="web_form_result" data-default="&nbsp;">&nbsp;</div>
 				
 				<div class='web_form_login_register'>
-					<a class='link' href='{{ site.locale_prefix }}/cabinet/login/'>Авторизация</a>
+					<a class='link' href='/cabinet/login/'>Авторизация</a>
 				</div>
 				
 			</form>
@@ -70,8 +71,7 @@ onJQueryLoaded(function(){
 						(
 							function()
 							{
-								document.location = site_locale_prefix +
-									"/cabinet/login/?from=register";
+								document.location = "/cabinet/login/?from=register";
 							},
 							500
 						);

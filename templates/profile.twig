@@ -2,13 +2,13 @@
 
 {% block content %}
 
-<form class='web_form web_form_login web_form_elberos_user'>
+<form class='web_form web_form--style1 web_form_login web_form_elberos_user'>
 	
 	{{ user_fields.renderForm(site.current_user) | raw }}
 	{{ user_fields.renderJS(site.current_user) | raw }}
 	
 	<div class='web_form_buttons'>
-		<button type='button' class='button button--submit button_profile--submit'>Обновить</button>
+		<button type='button' class='button1 button_profile--submit'>Обновить</button>
 	</div>
 	
 	<div class="web_form_result" data-default="&nbsp;">&nbsp;</div>

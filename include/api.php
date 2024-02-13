@@ -597,8 +597,9 @@ class Api
 		}
 		
 		/* Process item */
+		$form_data = stripslashes_deep($_POST);
 		$user_fields = \Elberos\UserCabinet\User::create("profile");
-		$item = $user_fields->update($current_user, $_POST);
+		$item = $user_fields->update($current_user, $form_data);
 		$item = $user_fields->processItem($item);
 		
 		/* Update user profile */
