@@ -1,15 +1,17 @@
 {% extends "layout.twig" %}
 
-{% block content %}
+{% block site_container %}
 
-<div class='page_cabinet_succes_logout'>
-	<div class='page_cabinet_succes_logout_message'>Вы успешно вышли из кабинета</div>
-	<div class='page_cabinet_exit'>
-		<a class='nolink' href='{{ get_site_url("/") }}'>
-			<button class='button1'>
-				Перейти на главную
-			</button>
-		</a>
+<div class='section page_cabinet_succes_logout'>
+	<div class='section__wrap'>
+		<div class='page_cabinet_succes_logout_message'>Вы успешно вышли из кабинета</div>
+		<div class='page_cabinet_exit'>
+			<a class='nolink' href='{{ get_site_url("/") }}'>
+				<button class='button1'>
+					Перейти на главную
+				</button>
+			</a>
+		</div>
 	</div>
 </div>
 

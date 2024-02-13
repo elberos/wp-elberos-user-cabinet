@@ -34,8 +34,8 @@ onJQueryLoaded(function(){
 		var $form = $(this).parents('form.web_form_login');
 		
 		/* Result */
-		$form.find('.web_form_result').html('Ожидайте идёт отправка запроса');
 		ElberosFormClearResult( $form );
+		$form.find('.web_form_result').html('Ожидайте идёт отправка запроса');
 		
 		/* Get data */
 		var send_data = ElberosFormGetData($form);
